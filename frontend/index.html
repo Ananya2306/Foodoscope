@@ -246,7 +246,7 @@ footer{text-align:center;padding:40px 0 24px;color:var(--muted);font-size:12px;b
   </div>
 </div>
 
-<!-- ═══════════ PANEL: RECIPE SEARCH ═══════════ -->
+<!-- PANEL: RECIPE SEARCH -->
 <div class="panel active" id="panel-recipe">
   <div class="two-col">
 
@@ -291,7 +291,7 @@ footer{text-align:center;padding:40px 0 24px;color:var(--muted);font-size:12px;b
   </div>
 </div>
 
-<!-- ═══════════ PANEL: INGREDIENT SEARCH ═══════════ -->
+<!-- PANEL: INGREDIENT SEARCH -->
 <div class="panel" id="panel-ingredient">
   <div class="card">
     <div class="card-title">🥗 What's In Your Kitchen?</div>
@@ -319,52 +319,18 @@ footer{text-align:center;padding:40px 0 24px;color:var(--muted);font-size:12px;b
 <footer>Foodoscope &nbsp;·&nbsp; AI-Powered Recipe Analyzer &nbsp;·&nbsp; Python + Claude API Backend &nbsp;🍴</footer>
 
 <script>
-// ════════════════════════════════════════════
+
 // STATE
-// ════════════════════════════════════════════
 let numRecipes = 5;
 let currentServingMult = 1;
 let currentRecipeData = null;
 let currentCheckedIngredients = new Set();
 let allIngredientsSelected = false;
 
-// ════════════════════════════════════════════
 // API CONFIG  ← replace with your Python backend URL
-// ════════════════════════════════════════════
 const API_BASE = 'http://localhost:8000';  // Python backend base URL
 
-/*
-  ══════════════════════════════════════════════════════
-  PYTHON BACKEND ENDPOINTS EXPECTED:
-
-  POST /api/search-recipes
-    body: { recipe_name, num_recipes, diet_goal }
-    returns: { recipes: [{ name, description, time, servings, difficulty,
-                diet, cuisine, match_score, nutrition:{calories,protein,carbs,fat} }] }
-
-  POST /api/recipe-detail
-    body: { recipe_name, checked_ingredients, serving_multiplier }
-    returns: {
-      overview: {name, description, time, servings, difficulty, diet, cuisine},
-      nutrition: {calories, protein, carbs, fat},
-      ingredients: [{name, qty, available, role, nutrition:{cal,pro,carb,fat}}],
-      substitutions: [{original, substitute, qty, score, note, role}],
-      procedure: [{title, instruction, tip}],
-      match_score: 80,
-      sub_count: 2
-    }
-
-  POST /api/find-by-ingredients
-    body: { ingredients: [], diet_goal, min_match: 50 }
-    returns: { recipes: [{ name, match_score, matched, missing,
-                nutrition:{calories,protein,carbs,fat}, diet, time }] }
-
-  ══════════════════════════════════════════════════════
-*/
-
-// ════════════════════════════════════════════
 // PHOTO HELPERS  (free picsum, no API key)
-// ════════════════════════════════════════════
 function heroPhoto(name){
   const s=name.split('').reduce((a,c)=>a+c.charCodeAt(0),0)*7%9999;
   return`https://picsum.photos/seed/${s+300}/900/420`;
@@ -374,9 +340,7 @@ function stepPhoto(name,i){
   return`https://picsum.photos/seed/${s}/640/340`;
 }
 
-// ════════════════════════════════════════════
 // INGREDIENT NUTRITION DB  (per base serving)
-// ════════════════════════════════════════════
 const IDB={
   "paneer":{base:"200g",cal:296,pro:18,carb:3,fat:23},
   "tomato":{base:"3 medium (300g)",cal:54,pro:2.7,carb:11.7,fat:0.6},
@@ -417,9 +381,7 @@ function getNutr(name,m=1){
   };
 }
 
-// ════════════════════════════════════════════
 // UI HELPERS
-// ════════════════════════════════════════════
 function switchMode(mode){
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
   document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
@@ -447,9 +409,7 @@ function animateBars(){
 }
 function toggleStep(el){el.classList.toggle('open');}
 
-// ════════════════════════════════════════════
 // SERVING METER
-// ════════════════════════════════════════════
 const SRVS=[{l:'½×',v:.5},{l:'1×',v:1},{l:'2×',v:2},{l:'3×',v:3}];
 function servingMeterHTML(active){
   return`<div class="serving-section">
@@ -474,9 +434,7 @@ function changeServing(v){
   if(sn){sn.style.display=v!==1?'inline-flex':'none';sn.textContent='⚡ Scaled to '+v+'× serving';}
 }
 
-// ════════════════════════════════════════════
 // INGREDIENT LIST BUILDER
-// ════════════════════════════════════════════
 function buildIngList(ingredients,m,fromRecipeSearch=false){
   if(!ingredients||!ingredients.length)return'<p style="color:var(--muted);font-size:14px;">No ingredient data</p>';
   return ingredients.map((ing,idx)=>{
@@ -555,9 +513,7 @@ function updateSelectAllState(){
   saRow.querySelector('.select-all-label').textContent=allIngredientsSelected?'All Ingredients Selected ✓':'Select All Ingredients';
 }
 
-// ════════════════════════════════════════════
 // NUTRITION GRID
-// ════════════════════════════════════════════
 function buildNutriGrid(n,m){
   return`<div class="nutri-grid">
     <div class="nutri-box"><div class="nutri-val" style="color:#fb923c">${Math.round(n.calories*m)}</div><div class="nutri-lbl">Calories</div></div>
@@ -567,9 +523,7 @@ function buildNutriGrid(n,m){
   </div>`;
 }
 
-// ════════════════════════════════════════════
 // LOADING STATE
-// ════════════════════════════════════════════
 const STEPS_SEARCH=['🔍 Searching recipe database…','✨ Generating recipe variants…','📊 Calculating match scores…','🎨 Preparing results…'];
 const STEPS_DETAIL=['📋 Loading recipe overview…','🥗 Fetching ingredients & nutrition…','🔄 Analyzing substitutions…','📖 Building step-by-step procedure…','📸 Sourcing step photos…'];
 
@@ -592,9 +546,7 @@ function showLoading(output,steps){
   return iv;
 }
 
-// ════════════════════════════════════════════
 // API CALLS  (calls Python backend)
-// ════════════════════════════════════════════
 async function apiCall(endpoint,body){
   const r=await fetch(API_BASE+endpoint,{
     method:'POST',
@@ -605,9 +557,7 @@ async function apiCall(endpoint,body){
   return r.json();
 }
 
-// ════════════════════════════════════════════
 // FALLBACK DATA (used when API is unavailable)
-// ════════════════════════════════════════════
 function fallbackSearchResults(name,count){
   const variants=[
     {name:`Classic ${name}`,description:`The traditional preparation of ${name} with authentic spices and slow-cooked depth.`,time:'35 min',servings:4,difficulty:'Medium',diet:'Balanced',cuisine:'Indian',match_score:92,nutrition:{calories:380,protein:16,carbs:42,fat:14}},
@@ -669,9 +619,7 @@ function fallbackByIngredients(ingredients){
   return{recipes:results};
 }
 
-// ════════════════════════════════════════════
 // STEP 1 — RECIPE SEARCH: show list of recipes
-// ════════════════════════════════════════════
 async function searchRecipes(){
   const name=document.getElementById('recipeName').value.trim();
   const dietGoal=document.getElementById('dietGoal').value;
@@ -796,9 +744,7 @@ function renderChecklistSection(container,data,recipeName){
   container.scrollIntoView({behavior:'smooth',block:'start'});
 }
 
-// ════════════════════════════════════════════
 // STEP 3 — SHOW FULL RECIPE
-// ════════════════════════════════════════════
 async function showFullRecipe(recipeName){
   const existing=document.getElementById('full-recipe-section');
   if(existing)existing.remove();
@@ -942,10 +888,8 @@ function renderFullRecipe(container,recipe,recipeName,checkedList){
   container.scrollIntoView({behavior:'smooth',block:'start'});
 }
 
-// ════════════════════════════════════════════
 // INGREDIENT SEARCH FLOW
-// ════════════════════════════════════════════
-async function findByIngredients(){
+sync function findByIngredients(){
   const raw=document.getElementById('ingredientInput').value.trim();
   const dietGoal=document.getElementById('dietGoal').value;
   const output=document.getElementById('ingredientOutput');
