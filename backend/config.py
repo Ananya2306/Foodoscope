@@ -12,6 +12,6 @@ API_KEY = os.getenv("API_KEY", "")
 RECIPE_BASE_URL = os.getenv("RECIPE_BASE_URL", "")
 FLAVOR_BASE_URL = os.getenv("FLAVOR_BASE_URL", "")
 
-APP_HOST = "0.0.0.0"
+APP_HOST = "localhost"
 APP_PORT = 8000
 APP_RELOAD = True
