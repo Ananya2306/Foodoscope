@@ -4,7 +4,7 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Foodoscope — Smart Recipe Analyzer</title>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@300;400;500;600&family=Lora:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300;1,400&display=swap" rel="stylesheet"/>
 <style>
 :root{
   --bg:#0a0a08;
@@ -243,26 +243,247 @@ textarea{height:88px;}
 .sub-arrow{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--text3);}
 .sub-note{font-size:12px;color:var(--text2);line-height:1.5;margin-top:6px;}
 
-/* STEPS */
-.step-item{border:1px solid var(--border);border-radius:8px;margin-bottom:8px;overflow:hidden;transition:border-color .2s;}
-.step-item:hover{border-color:var(--border2);}
-.step-item.open{border-color:rgba(232,164,53,0.25);}
-.step-head{padding:14px 18px;display:flex;align-items:center;gap:14px;cursor:pointer;user-select:none;background:var(--surface2);transition:background .15s;}
-.step-head:hover{background:var(--surface3);}
-.step-num-badge{
-  width:26px;height:26px;border-radius:6px;background:var(--surface3);border:1px solid var(--border2);
-  display:flex;align-items:center;justify-content:center;font-family:'IBM Plex Mono',monospace;
-  font-size:11px;color:var(--text3);flex-shrink:0;transition:all .2s;
+/* =============================================
+   STEPS — Redesigned
+   ============================================= */
+
+/* Outer container label row */
+.proc-header{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:28px;
 }
-.step-item.open .step-num-badge{background:var(--amber);border-color:transparent;color:#0a0a08;}
-.step-title{font-size:13px;font-weight:500;color:var(--text2);flex:1;transition:color .15s;}
-.step-item.open .step-title{color:var(--text);}
-.step-chevron{font-size:10px;color:var(--text3);transition:transform .2s;}
-.step-item.open .step-chevron{transform:rotate(90deg);}
-.step-body{display:none;padding:16px 18px 18px 58px;background:var(--surface);}
-.step-item.open .step-body{display:block;}
-.step-text{font-size:14px;color:var(--text);line-height:1.75;margin-bottom:10px;}
-.step-tip{background:rgba(91,141,217,0.07);border:1px solid rgba(91,141,217,0.15);border-radius:6px;padding:10px 14px;font-size:12px;color:var(--blue);font-family:'IBM Plex Mono',monospace;line-height:1.5;}
+.proc-header-left{
+  display:flex;flex-direction:column;gap:4px;
+}
+.proc-eyebrow{
+  font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:500;
+  color:var(--text3);letter-spacing:0.14em;text-transform:uppercase;
+}
+.proc-title{
+  font-family:'Playfair Display',serif;font-size:18px;font-weight:700;
+  color:var(--text);letter-spacing:-0.2px;
+}
+.proc-count-badge{
+  font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text3);
+  border:1px solid var(--border2);padding:5px 12px;border-radius:4px;
+  letter-spacing:0.06em;white-space:nowrap;background:var(--surface2);
+}
+
+/* Timeline wrapper */
+.proc-timeline{
+  position:relative;
+  padding-left:48px;
+}
+.proc-timeline::before{
+  content:'';
+  position:absolute;
+  left:16px;
+  top:24px;
+  bottom:24px;
+  width:1px;
+  background:linear-gradient(to bottom, var(--amber) 0%, rgba(232,164,53,0.15) 60%, transparent 100%);
+}
+
+/* Individual step */
+.step-block{
+  position:relative;
+  margin-bottom:6px;
+  animation:fadeUp .35s ease both;
+}
+
+/* The dot on the timeline */
+.step-dot{
+  position:absolute;
+  left:-40px;
+  top:18px;
+  width:16px;
+  height:16px;
+  border-radius:50%;
+  border:2px solid var(--border2);
+  background:var(--surface);
+  transition:all .25s;
+  z-index:2;
+  display:flex;align-items:center;justify-content:center;
+}
+.step-dot::after{
+  content:'';
+  width:6px;height:6px;
+  border-radius:50%;
+  background:var(--text3);
+  transition:background .25s;
+}
+
+/* The card */
+.step-card{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:10px;
+  overflow:hidden;
+  transition:border-color .2s, box-shadow .2s;
+  cursor:pointer;
+}
+.step-card:hover{
+  border-color:var(--border2);
+}
+.step-block.open .step-card{
+  border-color:rgba(232,164,53,0.3);
+  box-shadow:0 0 0 1px rgba(232,164,53,0.08), 0 4px 24px rgba(0,0,0,0.3);
+}
+.step-block.open .step-dot{
+  border-color:var(--amber);
+  background:var(--amber);
+  box-shadow:0 0 12px rgba(232,164,53,0.4);
+}
+.step-block.open .step-dot::after{
+  background:#0a0a08;
+}
+
+/* Step header row */
+.step-head{
+  display:flex;
+  align-items:center;
+  gap:14px;
+  padding:15px 20px;
+  background:var(--surface2);
+  user-select:none;
+  transition:background .15s;
+}
+.step-card:hover .step-head{
+  background:var(--surface3);
+}
+.step-block.open .step-head{
+  background:rgba(232,164,53,0.05);
+  border-bottom:1px solid rgba(232,164,53,0.12);
+}
+
+/* Step number */
+.step-num{
+  font-family:'Playfair Display',serif;
+  font-size:22px;
+  font-weight:700;
+  color:var(--text3);
+  line-height:1;
+  width:26px;
+  flex-shrink:0;
+  transition:color .2s;
+}
+.step-block.open .step-num{
+  color:var(--amber);
+}
+
+/* Step title */
+.step-title-text{
+  flex:1;
+  font-family:'Lora',serif;
+  font-size:15px;
+  font-weight:600;
+  color:var(--text2);
+  letter-spacing:0.01em;
+  line-height:1.3;
+  transition:color .2s;
+}
+.step-block.open .step-title-text{
+  color:var(--text);
+}
+
+/* Expand icon */
+.step-toggle-icon{
+  width:22px;height:22px;
+  border-radius:50%;
+  border:1px solid var(--border2);
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;
+  transition:all .2s;
+  color:var(--text3);
+  font-size:9px;
+}
+.step-block.open .step-toggle-icon{
+  background:var(--amber);
+  border-color:var(--amber);
+  color:#0a0a08;
+  transform:rotate(90deg);
+}
+
+/* Step body — the content */
+.step-body{
+  display:none;
+  padding:22px 24px 24px 24px;
+}
+.step-block.open .step-body{
+  display:block;
+  animation:bodyReveal .25s ease both;
+}
+@keyframes bodyReveal{
+  from{opacity:0;transform:translateY(-6px);}
+  to{opacity:1;transform:translateY(0);}
+}
+
+/* The main instruction text */
+.step-instruction{
+  font-family:'Lora',serif;
+  font-size:15px;
+  font-weight:400;
+  line-height:1.85;
+  color:var(--text);
+  margin-bottom:16px;
+  letter-spacing:0.01em;
+}
+
+/* Highlighted key actions within instruction */
+.step-instruction strong{
+  color:var(--amber);
+  font-weight:600;
+}
+
+/* Pro tip block */
+.step-tip{
+  display:flex;
+  align-items:flex-start;
+  gap:12px;
+  background:rgba(91,141,217,0.06);
+  border:1px solid rgba(91,141,217,0.15);
+  border-left:3px solid var(--blue);
+  border-radius:0 6px 6px 0;
+  padding:12px 16px;
+  margin-top:4px;
+}
+.step-tip-icon{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:10px;
+  font-weight:500;
+  color:var(--blue);
+  letter-spacing:0.08em;
+  text-transform:uppercase;
+  white-space:nowrap;
+  margin-top:1px;
+  flex-shrink:0;
+  background:rgba(91,141,217,0.12);
+  padding:3px 8px;
+  border-radius:3px;
+}
+.step-tip-text{
+  font-family:'Crimson Pro',serif;
+  font-size:15px;
+  font-style:italic;
+  color:var(--blue);
+  line-height:1.6;
+  letter-spacing:0.01em;
+}
+
+/* Expand-all toggle */
+.proc-expand-all{
+  display:flex;align-items:center;gap:6px;
+  font-family:'IBM Plex Mono',monospace;font-size:10px;
+  color:var(--text3);letter-spacing:0.06em;
+  background:none;border:1px solid var(--border);
+  padding:5px 12px;border-radius:4px;cursor:pointer;
+  transition:all .15s;text-transform:uppercase;
+}
+.proc-expand-all:hover{border-color:var(--amber);color:var(--amber);}
+
+/* =============================================
+   END STEPS REDESIGN
+   ============================================= */
 
 /* ALERT BOXES */
 .info-box{background:rgba(91,141,217,0.06);border:1px solid rgba(91,141,217,0.15);border-radius:8px;padding:12px 16px;font-size:13px;color:var(--blue);margin-bottom:16px;}
@@ -428,7 +649,20 @@ function pickNum(n){
   document.getElementById('numPickerLabel').textContent=n+' recipe'+(n===1?'':'s');
 }
 function animateBars(){setTimeout(()=>document.querySelectorAll('.prog-fill').forEach(el=>el.style.width=el.dataset.target+'%'),80);}
-function toggleStep(el){el.classList.toggle('open');}
+
+// Toggle a step open/closed
+function toggleStep(blockEl){
+  blockEl.classList.toggle('open');
+}
+
+// Expand/collapse all steps
+function toggleAllSteps(){
+  const blocks=document.querySelectorAll('.step-block');
+  const anyOpen=[...blocks].some(b=>b.classList.contains('open'));
+  blocks.forEach(b=>{ if(anyOpen) b.classList.remove('open'); else b.classList.add('open'); });
+  const btn=document.getElementById('expand-all-btn');
+  if(btn) btn.textContent=anyOpen?'Expand All':'Collapse All';
+}
 
 const SRVS=[{l:'½×',v:.5},{l:'1×',v:1},{l:'2×',v:2},{l:'3×',v:3}];
 function servingMeterHTML(active){
@@ -641,6 +875,65 @@ async function showFullRecipe(recipeName){
   clearInterval(iv);currentRecipeData=data;renderFullRecipe(fullDiv,data,recipeName,checkedList);
 }
 
+// ─── REDESIGNED PROCEDURE BUILDER ────────────────────────────────────────────
+function buildProcedureHTML(steps) {
+  if (!steps || !steps.length) {
+    return `<div class="info-box">No procedure available for this recipe.</div>`;
+  }
+
+  const stepsHTML = steps.map((step, i) => {
+    const title = step.title || `Step ${i + 1}`;
+    const instruction = step.instruction || '';
+    const tip = step.tip || '';
+    const delay = (i * 0.06).toFixed(2);
+
+    // Auto-bold cooking verbs and time references for scanability
+    const formattedInstruction = instruction
+      .replace(/\b(\d+[\–\-]\d+\s*(?:minutes?|mins?|seconds?|secs?|hours?)|\d+\s*(?:minutes?|mins?|seconds?|secs?|hours?))\b/gi,
+        '<strong>$1</strong>')
+      .replace(/\b(heat|fry|sauté|sear|simmer|boil|roast|bake|stir|whisk|fold|mix|blend|chop|dice|mince|slice|drain|season|garnish|serve|rest|add|cook)\b/gi,
+        '<strong>$1</strong>');
+
+    const tipHTML = tip ? `
+      <div class="step-tip">
+        <span class="step-tip-icon">Tip</span>
+        <span class="step-tip-text">${tip}</span>
+      </div>` : '';
+
+    return `
+      <div class="step-block" style="animation-delay:${delay}s" onclick="toggleStep(this)">
+        <div class="step-dot"></div>
+        <div class="step-card">
+          <div class="step-head">
+            <div class="step-num">${String(i + 1).padStart(2, '0')}</div>
+            <div class="step-title-text">${title}</div>
+            <div class="step-toggle-icon">▶</div>
+          </div>
+          <div class="step-body">
+            <div class="step-instruction">${formattedInstruction}</div>
+            ${tipHTML}
+          </div>
+        </div>
+      </div>`;
+  }).join('');
+
+  return `
+    <div class="proc-header">
+      <div class="proc-header-left">
+        <div class="proc-eyebrow">Step-by-Step</div>
+        <div class="proc-title">How to Cook It</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span class="proc-count-badge">${steps.length} steps</span>
+        <button class="proc-expand-all" id="expand-all-btn" onclick="event.stopPropagation();toggleAllSteps()">Expand All</button>
+      </div>
+    </div>
+    <div class="proc-timeline">
+      ${stepsHTML}
+    </div>`;
+}
+// ─────────────────────────────────────────────────────────────────────────────
+
 function renderFullRecipe(container,recipe,recipeName,checkedList){
   const ov=recipe.overview;const n=recipe.nutrition;const m=currentServingMult;
   const allSelected=checkedList.length>0&&currentRecipeData&&checkedList.length>=currentRecipeData.ingredients.length;
@@ -660,25 +953,16 @@ function renderFullRecipe(container,recipe,recipeName,checkedList){
       }).join('');
     }
   }
-  const procHTML=recipe.procedure.map((step,i)=>`
-    <div class="step-item" onclick="toggleStep(this)">
-      <div class="step-head">
-        <div class="step-num-badge">${i+1}</div>
-        <div class="step-title">${step.title||'Step '+(i+1)}</div>
-        <div class="step-chevron">▶</div>
-      </div>
-      <div class="step-body">
-        <div class="step-text">${step.instruction}</div>
-        ${step.tip?`<div class="step-tip">Pro tip — ${step.tip}</div>`:''}
-      </div>
-    </div>`).join('');
+
   const matchBar=!allSelected&&matchScore>0?`
     <div class="match-bar">
       <div class="match-bar-label">Ingredient Match</div>
       <div class="prog-track"><div class="prog-fill ${matchScore>=75?'green':matchScore>=50?'':'blue'}" style="width:0%" data-target="${matchScore}"></div></div>
       <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text3);margin-top:8px;">${matchScore}% match · ${subCount} substitution${subCount!==1?'s':''} suggested</div>
     </div>`:'';
+
   const explanationHTML=recipe.explanation?`<div class="info-box" style="margin-bottom:16px;">${recipe.explanation}</div>`:'';
+
   container.innerHTML=`
     <div class="card" style="animation-delay:0s">
       <div class="card-label">Recipe Overview</div>
@@ -707,11 +991,12 @@ function renderFullRecipe(container,recipe,recipeName,checkedList){
       ${explanationHTML}${matchBar}${subHTML}
     </div>`:`<div class="success-box" style="margin-bottom:20px;animation:fadeUp .3s both">All ingredients available — ready to cook.</div>`}
     <div class="card" style="animation-delay:.16s">
-      <div class="card-label">Step-by-Step Procedure</div>
-      <div style="font-size:13px;color:var(--text2);margin-bottom:16px;">Tap any step to expand the instructions.</div>
-      ${procHTML}
+      <div class="card-label">Procedure</div>
+      ${buildProcedureHTML(recipe.procedure)}
     </div>`;
-  animateBars();container.scrollIntoView({behavior:'smooth',block:'start'});
+
+  animateBars();
+  container.scrollIntoView({behavior:'smooth',block:'start'});
 }
 
 async function findByIngredients(){
