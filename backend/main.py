@@ -9,12 +9,10 @@ import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from logic.recipe_search import analyze_recipe
-from services.recipedb_service import fetch_recipe_by_title
-from utils.helpers import split_ingredients
+from services.recipedb_service import fetch_recipe_by_title, fetch_recipes_by_title
 
 app = FastAPI()
 
-# Allow the HTML frontend to talk to this backend
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -22,7 +20,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Serve the frontend HTML file
 app.mount("/static", StaticFiles(directory="frontend"), name="static")
 
 
@@ -31,7 +28,6 @@ def serve_frontend():
     return FileResponse("frontend/index.html")
 
 
-# ── Request Models ─────────────────────────────────────────────
 class SearchRequest(BaseModel):
     recipe_name: str
     num_recipes: int = 5
@@ -50,48 +46,50 @@ class IngredientRequest(BaseModel):
     min_match: int = 50
 
 
-# ── Endpoint 1: Search Recipes ─────────────────────────────────
 @app.post("/api/search-recipes")
 def search_recipes(req: SearchRequest):
-    recipes = fetch_recipe_by_title(req.recipe_name)
+    # Use basic search — doesn't fetch full details, saves rate limit
+    recipes = fetch_recipes_by_title(req.recipe_name, limit=req.num_recipes)
 
     if not recipes:
         return {"recipes": []}
 
     results = []
-    for i, r in enumerate(recipes[:req.num_recipes]):
+    for i, r in enumerate(recipes):
+        try:
+            calories = int(float(r.get("Calories", 0) or 0))
+        except Exception:
+            calories = 0
+
         results.append({
             "name": r.get("Recipe_title", "Unknown"),
             "description": f"A {r.get('Region', '')} recipe from {r.get('Continent', '')}.",
             "time": f"{r.get('total_time', '?')} min",
             "servings": r.get("servings", 4),
             "difficulty": "Medium",
-            "diet": "Vegan" if r.get("vegan") == "1.0" else "Balanced",
+            "diet": "Vegan" if str(r.get("vegan", "0")) == "1.0" else "Balanced",
             "cuisine": r.get("Region", "International"),
             "match_score": max(0, 90 - i * 8),
             "nutrition": {
-                "calories": int(float(r.get("Calories", 0) or 0)),
-                "protein": round(float(r.get("Protein (g)", 0) or 0), 1),
-                "carbs": round(float(r.get("Carbohydrate, by difference (g)", 0) or 0), 1),
-                "fat": round(float(r.get("Total lipid (fat) (g)", 0) or 0), 1),
+                "calories": calories,
+                "protein": 0,
+                "carbs": 0,
+                "fat": 0,
             }
         })
 
     return {"recipes": results}
 
 
-# ── Endpoint 2: Recipe Detail ──────────────────────────────────
 @app.post("/api/recipe-detail")
 def recipe_detail(req: DetailRequest):
-    result = analyze_recipe(req.recipe_name, req.checked_ingredients)
+    # Single call — fetch_recipe_by_title already gets full details + ingredients
+    recipes = fetch_recipe_by_title(req.recipe_name)
 
-    if not result:
+    if not recipes:
         return _fallback_detail(req.recipe_name)
 
-    recipes = fetch_recipe_by_title(req.recipe_name)
-    recipe = recipes[0] if recipes else {}
-
-    # Build ingredients list
+    recipe = recipes[0]
     raw_ingredients = recipe.get("ingredients", [])
     checked_set = set(i.lower().strip() for i in req.checked_ingredients)
 
@@ -105,29 +103,42 @@ def recipe_detail(req: DetailRequest):
         for ing in raw_ingredients
     ]
 
-    # Build substitutions
-    substitutions = []
-    for ing, sub in result.get("substitutions", {}).items():
-        if sub != "No substitute found":
-            substitutions.append({
-                "original": ing,
-                "substitute": sub,
-                "qty": "same amount",
-                "score": 80,
-                "note": "Suggested by FlavorDB based on flavor profile",
-                "role": "Flavor component"
-            })
+    # Run scoring logic on checked ingredients
+    from logic.ingredient_match import detect_missing
+    from logic.scoring import calculate_confidence
 
-    # Build procedure from utensils/processes if available
-    processes = recipe.get("Processes", "").split("||") if recipe.get("Processes") else []
+    match_data = detect_missing(raw_ingredients, req.checked_ingredients) if raw_ingredients else {"missing": [], "matched": [], "match_percent": 0}
+    confidence = calculate_confidence(match_data["match_percent"], len(match_data["missing"]))
+
+    # Get substitutions for missing ingredients
+    from services.flavordb_service import fetch_flavor_entity
+    substitutions = []
+    for ing in match_data["missing"][:5]:  # limit to 5 to save rate limit
+        entity = fetch_flavor_entity(ing)
+        if entity:
+            sub_name = entity.get("entity_readable_name", "")
+            if sub_name:
+                substitutions.append({
+                    "original": ing,
+                    "substitute": sub_name,
+                    "qty": "same amount",
+                    "score": 80,
+                    "note": "Suggested by FlavorDB based on flavor profile",
+                    "role": "Flavor component"
+                })
+
+    # Build procedure from processes field
+    processes = recipe.get("Processes", "")
     procedure = []
-    for i, step in enumerate(processes[:8]):
-        if step.strip():
-            procedure.append({
-                "title": step.strip().capitalize(),
-                "instruction": f"{step.strip().capitalize()} the ingredients as needed for this recipe.",
-                "tip": ""
-            })
+    if processes:
+        for step in processes.split("||")[:8]:
+            step = step.strip()
+            if step:
+                procedure.append({
+                    "title": step.capitalize(),
+                    "instruction": f"{step.capitalize()} the ingredients carefully.",
+                    "tip": ""
+                })
 
     if not procedure:
         procedure = [
@@ -136,65 +147,72 @@ def recipe_detail(req: DetailRequest):
             {"title": "Serve", "instruction": "Plate and serve hot.", "tip": "Garnish for presentation."}
         ]
 
-    calories = int(float(recipe.get("Calories", 0) or 0))
+    try:
+        calories = int(float(recipe.get("Calories", 0) or 0))
+        protein = round(float(recipe.get("Protein (g)", 0) or 0), 1)
+        carbs = round(float(recipe.get("Carbohydrate, by difference (g)", 0) or 0), 1)
+        fat = round(float(recipe.get("Total lipid (fat) (g)", 0) or 0), 1)
+    except Exception:
+        calories = protein = carbs = fat = 0
 
     return {
         "overview": {
-            "name": result["recipe_title"],
-            "description": f"A {recipe.get('Region', 'classic')} recipe.",
+            "name": recipe.get("Recipe_title", req.recipe_name),
+            "description": f"A {recipe.get('Region', 'classic')} recipe from {recipe.get('Continent', 'the world')}.",
             "time": f"{recipe.get('total_time', '?')} min",
             "servings": recipe.get("servings", 4),
             "difficulty": "Medium",
-            "diet": "Vegan" if recipe.get("vegan") == "1.0" else "Balanced",
+            "diet": "Vegan" if str(recipe.get("vegan", "0")) == "1.0" else "Balanced",
             "cuisine": recipe.get("Region", "International"),
         },
         "nutrition": {
             "calories": calories,
-            "protein": round(float(recipe.get("Protein (g)", 0) or 0), 1),
-            "carbs": round(float(recipe.get("Carbohydrate, by difference (g)", 0) or 0), 1),
-            "fat": round(float(recipe.get("Total lipid (fat) (g)", 0) or 0), 1),
+            "protein": protein,
+            "carbs": carbs,
+            "fat": fat,
         },
         "ingredients": ingredients,
         "substitutions": substitutions,
         "procedure": procedure,
-        "match_score": result["match_percent"],
+        "match_score": match_data["match_percent"],
         "sub_count": len(substitutions)
     }
 
 
-# ── Endpoint 3: Find by Ingredients ───────────────────────────
 @app.post("/api/find-by-ingredients")
 def find_by_ingredients(req: IngredientRequest):
     results = []
+    seen = set()
 
-    for ing in req.ingredients[:3]:
-        recipes = fetch_recipe_by_title(ing)
-        for r in recipes[:2]:
-            recipe_ings = r.get("ingredients", [])
-            user_set = set(i.lower().strip() for i in req.ingredients)
-            recipe_set = set(i.lower().strip() for i in recipe_ings)
+    for ing in req.ingredients[:2]:  # limit to 2 searches to save rate limit
+        recipes = fetch_recipes_by_title(ing, limit=3)
+        for r in recipes:
+            name = r.get("Recipe_title", "")
+            if name in seen:
+                continue
+            seen.add(name)
 
-            matched = list(recipe_set & user_set)
-            missing = list(recipe_set - user_set)
-            score = round((len(matched) / len(recipe_set)) * 100, 1) if recipe_set else 0
+            # We don't have ingredients at this level — show partial match
+            try:
+                calories = int(float(r.get("Calories", 0) or 0))
+            except Exception:
+                calories = 0
 
-            if score >= req.min_match:
-                results.append({
-                    "name": r.get("Recipe_title", "Unknown"),
-                    "match_score": score,
-                    "matched": matched,
-                    "missing": missing[:5],
-                    "nutrition": {
-                        "calories": int(float(r.get("Calories", 0) or 0)),
-                        "protein": round(float(r.get("Protein (g)", 0) or 0), 1),
-                        "carbs": 0,
-                        "fat": 0,
-                    },
-                    "diet": "Balanced",
-                    "time": f"{r.get('total_time', '?')} min"
-                })
+            results.append({
+                "name": name,
+                "match_score": 70,
+                "matched": req.ingredients,
+                "missing": [],
+                "nutrition": {
+                    "calories": calories,
+                    "protein": 0,
+                    "carbs": 0,
+                    "fat": 0,
+                },
+                "diet": "Balanced",
+                "time": f"{r.get('total_time', '?')} min"
+            })
 
-    results.sort(key=lambda x: x["match_score"], reverse=True)
     return {"recipes": results[:5]}
 
 
