@@ -1,17 +1,17 @@
 import requests
-from utils.constants import API_KEY, FLAVOR_BASE_URL
+from utils.constants import FLAVORDB_API_KEY, FLAVORDB_BASE_URL
 
 
 def fetch_flavor_entity(name: str):
 
-    # Try with full name first, then first word only
+    # Try full name first, then first word only
     attempts = [name, name.split()[0]]
 
     for attempt in attempts:
-        url = f"{FLAVOR_BASE_URL}/entities/by-readable-name"
+        url = f"{FLAVORDB_BASE_URL}/entities/by-readable-name"
 
         headers = {
-            "Authorization": f"Bearer {API_KEY}",
+            "Authorization": f"Bearer {FLAVORDB_API_KEY}",
             "Content-Type": "application/json"
         }
 

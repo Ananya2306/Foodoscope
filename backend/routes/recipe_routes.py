@@ -40,7 +40,8 @@ def search_recipes(req: SearchRequest):
     results = []
     for i, r in enumerate(recipes):
         try:
-            calories = int(float(r.get("Calories", 0) or 0))
+            servings = max(1, int(float(r.get("servings", 1) or 1)))
+            calories = int(float(r.get("Calories", 0) or 0) / servings)
         except Exception:
             calories = 0
 
@@ -88,9 +89,17 @@ def recipe_detail(req: DetailRequest):
         for ing in raw_ingredients
     ]
 
-    match_data = detect_missing(raw_ingredients, req.checked_ingredients) if raw_ingredients else {
-        "missing": [], "matched": [], "match_percent": 0
-    }
+    # Only run match detection if user actually checked some ingredients
+    if raw_ingredients and req.checked_ingredients:
+        match_data = detect_missing(raw_ingredients, req.checked_ingredients)
+    else:
+        # No checked ingredients — treat all as missing so substitutions work correctly
+        match_data = {
+            "missing": raw_ingredients,
+            "matched": [],
+            "match_percent": 0
+        }
+
     confidence = calculate_confidence(match_data["match_percent"], len(match_data["missing"]))
     explanation = generate_tradeoff_line(match_data["match_percent"], len(match_data["missing"]))
 
@@ -114,10 +123,11 @@ def recipe_detail(req: DetailRequest):
     procedure = get_procedure(recipe_id, processes)
 
     try:
-        calories = int(float(recipe.get("Calories", 0) or 0))
-        protein = round(float(recipe.get("Protein (g)", 0) or 0), 1)
-        carbs = round(float(recipe.get("Carbohydrate, by difference (g)", 0) or 0), 1)
-        fat = round(float(recipe.get("Total lipid (fat) (g)", 0) or 0), 1)
+        servings = max(1, int(float(recipe.get("servings", 1) or 1)))
+        calories = int(float(recipe.get("Calories", 0) or 0) / servings)
+        protein = round(float(recipe.get("Protein (g)", 0) or 0) / servings, 1)
+        carbs = round(float(recipe.get("Carbohydrate, by difference (g)", 0) or 0) / servings, 1)
+        fat = round(float(recipe.get("Total lipid (fat) (g)", 0) or 0) / servings, 1)
     except Exception:
         calories = protein = carbs = fat = 0
 

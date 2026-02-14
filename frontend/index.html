@@ -3,261 +3,339 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Foodoscope</title>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet"/>
+<title>Foodoscope — Smart Recipe Analyzer</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
 <style>
 :root{
-  --bg:#080d18;--surface:#0d1525;--surface2:#121c2e;--surface3:#172035;
-  --border:#1a2942;--border2:#243650;
-  --accent:#f97316;--accent2:#3b82f6;--green:#22c55e;--red:#ef4444;
-  --yellow:#eab308;--purple:#a855f7;
-  --text:#e2e8f0;--text2:#94a3b8;--muted:#475569;
-  --glow-orange:rgba(249,115,22,0.18);
+  --bg:#0a0a08;
+  --surface:#111110;
+  --surface2:#181815;
+  --surface3:#1f1f1b;
+  --border:#2a2a24;
+  --border2:#363630;
+  --amber:#e8a435;
+  --amber2:#f5c05a;
+  --amber-dim:rgba(232,164,53,0.12);
+  --amber-glow:rgba(232,164,53,0.06);
+  --green:#4caf7d;
+  --green-dim:rgba(76,175,125,0.12);
+  --red:#e05252;
+  --red-dim:rgba(224,82,82,0.12);
+  --blue:#5b8dd9;
+  --blue-dim:rgba(91,141,217,0.12);
+  --text:#e8e6df;
+  --text2:#8a8880;
+  --text3:#5a5855;
+  --muted:#3a3835;
 }
 *{margin:0;padding:0;box-sizing:border-box;}
 html{scroll-behavior:smooth;}
-body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;overflow-x:hidden;}
-body::before{content:'';position:fixed;top:-300px;left:50%;transform:translateX(-50%);width:1000px;height:700px;background:radial-gradient(ellipse,rgba(249,115,22,0.06) 0%,transparent 68%);pointer-events:none;z-index:0;}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:'Inter',sans-serif;
+  min-height:100vh;
+  overflow-x:hidden;
+}
+body::before{
+  content:'';
+  position:fixed;
+  inset:0;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.035'/%3E%3C/svg%3E");
+  pointer-events:none;z-index:9999;opacity:0.6;
+}
+body::after{
+  content:'';
+  position:fixed;top:-20vh;left:50%;transform:translateX(-50%);
+  width:60vw;height:50vh;
+  background:radial-gradient(ellipse,rgba(232,164,53,0.04) 0%,transparent 70%);
+  pointer-events:none;z-index:0;
+}
+.container{max-width:1160px;margin:0 auto;padding:0 28px;position:relative;z-index:1;}
 
-.container{max-width:1200px;margin:0 auto;padding:0 24px;position:relative;z-index:1;}
+/* HEADER */
+header{
+  padding:52px 0 40px;border-bottom:1px solid var(--border);margin-bottom:44px;
+  display:flex;align-items:flex-end;justify-content:space-between;gap:24px;
+}
+.logo-row{display:flex;align-items:center;gap:16px;margin-bottom:8px;}
+.logo-mark{
+  width:44px;height:44px;border:1px solid var(--amber);border-radius:10px;
+  display:flex;align-items:center;justify-content:center;font-size:18px;
+  box-shadow:0 0 24px rgba(232,164,53,0.2),inset 0 0 12px rgba(232,164,53,0.05);flex-shrink:0;
+}
+h1{font-family:'Playfair Display',serif;font-size:36px;font-weight:900;letter-spacing:-0.5px;color:var(--text);line-height:1;}
+h1 span{color:var(--amber);}
+.tagline{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text3);letter-spacing:0.12em;text-transform:uppercase;}
+.header-badge{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text3);border:1px solid var(--border2);padding:6px 14px;border-radius:4px;letter-spacing:0.08em;white-space:nowrap;}
 
-/* ─── HEADER ─── */
-header{padding:36px 0 28px;border-bottom:1px solid var(--border);margin-bottom:36px;}
-.logo-row{display:flex;align-items:center;gap:14px;margin-bottom:6px;}
-.logo-icon{width:48px;height:48px;background:linear-gradient(135deg,var(--accent),#fb923c);border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:22px;box-shadow:0 0 32px rgba(249,115,22,.38);flex-shrink:0;}
-h1{font-family:'Syne',sans-serif;font-size:34px;font-weight:800;letter-spacing:-1.2px;background:linear-gradient(135deg,#fff 30%,#f97316);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
-.subtitle{font-size:14px;color:var(--text2);letter-spacing:.02em;}
-
-/* ─── TABS ─── */
-.mode-bar{display:flex;gap:12px;margin-bottom:32px;flex-wrap:wrap;align-items:center;}
-.tab-group{display:flex;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:4px;gap:4px;}
-.tab{padding:9px 22px;border-radius:9px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;border:none;background:transparent;color:var(--text2);transition:all .2s;}
-.tab:hover{color:var(--text);}
-.tab.active{background:linear-gradient(135deg,var(--accent),#fb923c);color:#fff;box-shadow:0 0 18px rgba(249,115,22,.32);}
-.select-wrap{position:relative;margin-left:auto;}
-.select-wrap select{appearance:none;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:9px 36px 9px 14px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;outline:none;transition:border-color .2s;}
-.select-wrap select:hover{border-color:var(--accent);}
-.select-wrap::after{content:'▾';position:absolute;right:12px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none;font-size:12px;}
+/* NAV */
+.nav-bar{display:flex;align-items:center;margin-bottom:40px;border-bottom:1px solid var(--border);}
+.nav-tab{
+  padding:14px 24px;font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:500;
+  letter-spacing:0.08em;text-transform:uppercase;color:var(--text3);background:transparent;
+  border:none;border-bottom:2px solid transparent;cursor:pointer;transition:all .2s;margin-bottom:-1px;
+}
+.nav-tab:hover{color:var(--text2);}
+.nav-tab.active{color:var(--amber);border-bottom-color:var(--amber);}
+.nav-right{margin-left:auto;padding-bottom:1px;}
+.goal-select{
+  appearance:none;background:var(--surface);border:1px solid var(--border2);border-radius:6px;
+  padding:8px 32px 8px 12px;color:var(--text2);font-family:'IBM Plex Mono',monospace;font-size:11px;
+  letter-spacing:0.05em;cursor:pointer;outline:none;transition:border-color .2s;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' fill='none'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%235a5855' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 10px center;
+}
+.goal-select:hover{border-color:var(--amber);}
+.goal-select option{background:#111110;}
 .panel{display:none;}.panel.active{display:block;}
 
-/* ─── CARDS ─── */
-.card{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:24px;margin-bottom:16px;animation:fadeUp .35s ease both;}
-@keyframes fadeUp{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:translateY(0);}}
-.card:hover{border-color:var(--border2);}
-.card-title{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;margin-bottom:18px;display:flex;align-items:center;gap:8px;}
-label{display:block;font-size:12px;font-weight:500;color:var(--text2);margin-bottom:6px;letter-spacing:.05em;text-transform:uppercase;}
-input[type="text"],textarea,input[type="number"]{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:11px 14px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;outline:none;transition:border-color .2s,box-shadow .2s;resize:none;margin-bottom:14px;}
-input[type="text"]:focus,textarea:focus,input[type="number"]:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(249,115,22,.1);}
-textarea{height:90px;}
-input[type="number"]{width:80px;margin-bottom:0;text-align:center;}
-
-/* ─── BUTTONS ─── */
-.btn{padding:12px 24px;background:linear-gradient(135deg,var(--accent),#fb923c);border:none;border-radius:12px;color:#fff;font-family:'Syne',sans-serif;font-size:14px;font-weight:700;cursor:pointer;transition:all .2s;box-shadow:0 4px 20px rgba(249,115,22,.25);letter-spacing:.03em;display:inline-flex;align-items:center;gap:8px;}
-.btn:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(249,115,22,.4);}
-.btn:active{transform:translateY(0);}
-.btn-full{width:100%;justify-content:center;}
-.btn-outline{background:transparent;border:1px solid var(--border2);color:var(--text2);box-shadow:none;}
-.btn-outline:hover{border-color:var(--accent);color:var(--accent);box-shadow:none;}
-.btn-green{background:linear-gradient(135deg,#16a34a,#22c55e);box-shadow:0 4px 20px rgba(34,197,94,.25);}
-.btn-green:hover{box-shadow:0 8px 28px rgba(34,197,94,.4);}
-
-/* ─── BADGES ─── */
-.badge{display:inline-block;padding:4px 11px;border-radius:999px;font-size:11px;font-weight:600;margin:2px;letter-spacing:.02em;}
-.b-green{background:rgba(34,197,94,.12);color:#22c55e;border:1px solid rgba(34,197,94,.28);}
-.b-red{background:rgba(239,68,68,.12);color:#ef4444;border:1px solid rgba(239,68,68,.28);}
-.b-blue{background:rgba(59,130,246,.12);color:#60a5fa;border:1px solid rgba(59,130,246,.28);}
-.b-yellow{background:rgba(234,179,8,.12);color:#eab308;border:1px solid rgba(234,179,8,.28);}
-.b-orange{background:rgba(249,115,22,.12);color:var(--accent);border:1px solid rgba(249,115,22,.28);}
-.b-purple{background:rgba(168,85,247,.12);color:#c084fc;border:1px solid rgba(168,85,247,.28);}
-
-/* ─── PROGRESS ─── */
-.prog-wrap{margin:8px 0;}
-.prog-label{display:flex;justify-content:space-between;font-size:12px;margin-bottom:5px;color:var(--text2);}
-.prog-label span:last-child{color:var(--text);font-weight:600;}
-.prog-bar{width:100%;height:6px;background:var(--surface2);border-radius:999px;overflow:hidden;}
-.prog-fill{height:100%;border-radius:999px;background:linear-gradient(90deg,var(--accent),#fb923c);transition:width .8s cubic-bezier(.4,0,.2,1);box-shadow:0 0 8px rgba(249,115,22,.4);}
-.prog-fill.blue{background:linear-gradient(90deg,var(--accent2),#60a5fa);box-shadow:0 0 8px rgba(59,130,246,.4);}
-.prog-fill.green{background:linear-gradient(90deg,#16a34a,#22c55e);box-shadow:0 0 8px rgba(34,197,94,.4);}
-
-/* ─── SERVING METER ─── */
-.serving-section{margin-bottom:18px;}
-.serving-lbl{font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;}
-.serving-meter{display:inline-flex;background:var(--surface2);border:1px solid var(--border2);border-radius:12px;overflow:hidden;}
-.srv-btn{padding:8px 20px;background:transparent;border:none;border-right:1px solid var(--border);color:var(--text2);font-family:'Syne',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all .2s;white-space:nowrap;}
-.srv-btn:last-child{border-right:none;}
-.srv-btn:hover{background:rgba(249,115,22,.08);color:var(--text);}
-.srv-btn.active{background:linear-gradient(135deg,var(--accent),#fb923c);color:#fff;}
-
-/* ─── INGREDIENT CHECKLIST ─── */
-.ing-list{display:flex;flex-direction:column;gap:8px;margin-bottom:16px;}
-.ing-item{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:12px 14px;transition:all .2s;cursor:pointer;}
-.ing-item:hover{border-color:rgba(249,115,22,.25);}
-.ing-item.checked{border-color:rgba(34,197,94,.32);background:rgba(34,197,94,.04);}
-.ing-top{display:flex;align-items:center;gap:10px;}
-.ing-checkbox{width:18px;height:18px;border-radius:5px;border:2px solid var(--border2);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s;background:transparent;}
-.ing-item.checked .ing-checkbox{background:#22c55e;border-color:#22c55e;color:#fff;font-size:11px;}
-.ing-info{flex:1;min-width:0;}
-.ing-name{font-size:14px;font-weight:600;color:var(--text);}
-.ing-qty{font-size:12px;color:var(--accent);font-weight:500;margin-top:1px;}
-.ing-kcal-badge{font-size:11px;color:var(--text2);background:var(--surface);padding:2px 8px;border-radius:6px;border:1px solid var(--border);white-space:nowrap;flex-shrink:0;}
-.ing-nutri-row{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;}
-.nut-pill{font-size:11px;padding:2px 8px;border-radius:6px;font-weight:600;}
-.np-cal{background:rgba(249,115,22,.12);color:#fb923c;}
-.np-pro{background:rgba(34,197,94,.12);color:#4ade80;}
-.np-carb{background:rgba(59,130,246,.12);color:#60a5fa;}
-.np-fat{background:rgba(234,179,8,.12);color:#facc15;}
-
-/* SELECT ALL ROW */
-.select-all-row{display:flex;align-items:center;gap:12px;padding:12px 14px;background:rgba(249,115,22,.06);border:1px solid rgba(249,115,22,.2);border-radius:12px;margin-bottom:16px;cursor:pointer;transition:all .2s;}
-.select-all-row:hover{background:rgba(249,115,22,.1);}
-.select-all-checkbox{width:20px;height:20px;border-radius:6px;border:2px solid rgba(249,115,22,.5);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s;background:transparent;}
-.select-all-row.all-checked .select-all-checkbox{background:var(--accent);border-color:var(--accent);color:#fff;font-size:12px;}
-.select-all-label{font-size:13px;font-weight:600;color:var(--accent);}
-
-/* ─── NUTRI GRID ─── */
-.nutri-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:12px 0;}
-.nutri-box{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center;}
-.nutri-val{font-family:'Syne',sans-serif;font-size:18px;font-weight:800;line-height:1.1;margin-bottom:2px;}
-.nutri-lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;}
-
-/* ─── STEP WITH PHOTO ─── */
-.step-item{background:var(--surface2);border:1px solid var(--border);border-radius:12px;margin-bottom:10px;overflow:hidden;transition:border-color .2s;}
-.step-item:hover{border-color:rgba(249,115,22,.22);}
-.step-header{padding:14px 16px;display:flex;align-items:center;gap:12px;cursor:pointer;user-select:none;transition:background .15s;}
-.step-header:hover{background:rgba(255,255,255,.02);}
-.step-num{width:30px;height:30px;background:linear-gradient(135deg,var(--accent),#fb923c);border-radius:9px;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-size:13px;font-weight:700;flex-shrink:0;box-shadow:0 0 10px rgba(249,115,22,.3);}
-.step-title-txt{font-size:14px;font-weight:500;flex:1;color:var(--text2);}
-.step-arrow{font-size:11px;color:var(--muted);transition:transform .2s;}
-.step-body{display:none;padding:0 16px 16px 58px;}
-.step-item.open .step-arrow{transform:rotate(90deg);}
-.step-item.open .step-body{display:block;}
-.step-item.open .step-title-txt{color:var(--text);}
-.step-item.open{border-color:rgba(249,115,22,.28);background:rgba(249,115,22,.02);}
-.step-text{font-size:14px;color:var(--text);line-height:1.68;margin-bottom:12px;}
-.step-tip{background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.2);border-radius:10px;padding:10px 14px;font-size:13px;color:#93c5fd;margin-bottom:12px;}
-.step-img-wrap{border-radius:10px;overflow:hidden;border:1px solid var(--border);}
-.step-img{width:100%;height:200px;object-fit:cover;display:block;}
-.step-img-cap{font-size:11px;color:var(--text2);padding:7px 12px;background:rgba(0,0,0,.35);font-style:italic;}
-
-/* ─── RECIPE HERO ─── */
-.recipe-hero{width:100%;height:230px;object-fit:cover;border-radius:14px;margin-bottom:16px;border:1px solid var(--border);display:block;}
-.overview-name{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;margin-bottom:6px;}
-.overview-desc{font-size:14px;color:var(--text2);line-height:1.65;margin-bottom:14px;}
-
-/* ─── SUB ITEM ─── */
-.sub-item{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:10px;}
-.sub-header{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
-.arrow-icon{color:var(--accent);font-size:14px;}
-.sub-caption{font-size:12px;color:var(--text2);margin-top:6px;line-height:1.5;}
-
-/* ─── INFO BOXES ─── */
-.info-box{background:rgba(59,130,246,.07);border:1px solid rgba(59,130,246,.2);border-radius:10px;padding:12px 16px;font-size:13px;color:#93c5fd;margin-top:12px;}
-.warn-box{background:rgba(234,179,8,.07);border:1px solid rgba(234,179,8,.2);border-radius:10px;padding:12px 16px;font-size:13px;color:#fde047;margin-top:12px;}
-.success-box{background:rgba(34,197,94,.07);border:1px solid rgba(34,197,94,.2);border-radius:10px;padding:12px 16px;font-size:13px;color:#86efac;margin-top:12px;}
-.error-box{background:rgba(239,68,68,.07);border:1px solid rgba(239,68,68,.2);border-radius:10px;padding:12px 16px;font-size:13px;color:#fca5a5;margin-top:12px;}
-
-/* ─── LOADING ─── */
-.loading-card{text-align:center;padding:52px 20px;}
-.spinner{width:44px;height:44px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .75s linear infinite;margin:0 auto 16px;}
-@keyframes spin{to{transform:rotate(360deg);}}
-.loading-title{font-family:'Syne',sans-serif;font-size:16px;font-weight:700;color:var(--text);margin-bottom:4px;}
-.loading-sub{font-size:13px;color:var(--text2);margin-bottom:20px;}
-.load-steps{display:flex;flex-direction:column;gap:10px;max-width:300px;margin:0 auto;text-align:left;}
-.load-step{display:flex;align-items:center;gap:10px;font-size:12px;color:var(--text2);}
-.ldot{width:8px;height:8px;border-radius:50%;background:var(--border2);flex-shrink:0;transition:background .3s;}
-.ldot.done{background:var(--green);}
-.ldot.active{background:var(--accent);animation:blink 1s infinite;}
-@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
-
-/* ─── RECIPE CARD (ingredient search results) ─── */
-.recipe-result-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:18px 20px;margin-bottom:12px;cursor:pointer;transition:all .22s;animation:fadeUp .3s ease both;}
-.recipe-result-card:hover{border-color:rgba(249,115,22,.38);transform:translateY(-2px);box-shadow:0 8px 32px rgba(249,115,22,.1);}
-.rrc-header{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:10px;}
-.rrc-rank-name{display:flex;align-items:center;gap:10px;}
-.rrc-rank{font-size:22px;}
-.rrc-name{font-family:'Syne',sans-serif;font-size:17px;font-weight:700;}
-.score-pill{background:linear-gradient(135deg,var(--accent),#fb923c);border-radius:999px;padding:5px 14px;font-family:'Syne',sans-serif;font-size:13px;font-weight:700;box-shadow:0 0 14px rgba(249,115,22,.3);white-space:nowrap;}
-.rrc-badges{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px;}
-.rrc-click-hint{font-size:12px;color:var(--text2);display:flex;align-items:center;gap:4px;margin-top:8px;}
-
-/* ─── SCALE NOTE ─── */
-.scale-note{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--accent);background:rgba(249,115,22,.08);border:1px solid rgba(249,115,22,.2);padding:4px 10px;border-radius:8px;margin-bottom:14px;}
-
-/* ─── DIVIDER ─── */
-.divider{border:none;border-top:1px solid var(--border);margin:18px 0;}
-
-/* ─── TWO COL ─── */
-.two-col{display:grid;grid-template-columns:360px 1fr;gap:20px;align-items:start;}
+/* LAYOUT */
+.two-col{display:grid;grid-template-columns:340px 1fr;gap:28px;align-items:start;}
 @media(max-width:860px){.two-col{grid-template-columns:1fr;}}
 
-/* ─── SUGGESTIONS ─── */
-.suggestions{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px;}
-.chip{padding:5px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:999px;font-size:12px;color:var(--text2);cursor:pointer;transition:all .15s;}
-.chip:hover{border-color:var(--accent);color:var(--accent);background:rgba(249,115,22,.05);}
+/* CARDS */
+.card{
+  background:var(--surface);border:1px solid var(--border);border-radius:12px;
+  padding:28px;margin-bottom:20px;animation:fadeUp .3s ease both;
+}
+.card:hover{border-color:var(--border2);}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
+.card-label{
+  font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:500;color:var(--text3);
+  letter-spacing:0.14em;text-transform:uppercase;margin-bottom:20px;display:flex;align-items:center;gap:10px;
+}
+.card-label::after{content:'';flex:1;height:1px;background:var(--border);}
 
-/* ─── EMPTY STATE ─── */
-.empty-state{text-align:center;padding:60px 20px;}
-.empty-icon{font-size:46px;margin-bottom:14px;opacity:.4;}
-.empty-title{font-family:'Syne',sans-serif;font-size:17px;font-weight:700;color:#475569;margin-bottom:8px;}
-.empty-sub{font-size:13px;color:#334155;}
+/* FORM */
+.field-label{display:block;font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text3);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:8px;}
+input[type="text"],textarea{
+  width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;
+  padding:12px 14px;color:var(--text);font-family:'Inter',sans-serif;font-size:14px;
+  outline:none;transition:border-color .2s,box-shadow .2s;resize:none;margin-bottom:20px;
+}
+input[type="text"]:focus,textarea:focus{border-color:var(--amber);box-shadow:0 0 0 3px rgba(232,164,53,0.08);}
+input[type="text"]::placeholder,textarea::placeholder{color:var(--text3);}
+textarea{height:88px;}
 
-/* ─── NUM PICKER ─── */
-.num-picker-row{display:flex;align-items:center;gap:12px;margin-bottom:16px;}
-.num-picker-label{font-size:13px;color:var(--text2);}
-.num-btns{display:flex;gap:6px;}
-.num-btn{width:34px;height:34px;border-radius:8px;border:1px solid var(--border2);background:var(--surface2);color:var(--text2);font-family:'Syne',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;}
-.num-btn:hover{border-color:var(--accent);color:var(--accent);}
-.num-btn.active{background:linear-gradient(135deg,var(--accent),#fb923c);border-color:transparent;color:#fff;box-shadow:0 0 12px rgba(249,115,22,.3);}
+/* BUTTONS */
+.btn{
+  padding:13px 24px;background:var(--amber);border:none;border-radius:8px;color:#0a0a08;
+  font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:500;letter-spacing:0.08em;
+  text-transform:uppercase;cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;
+  gap:8px;box-shadow:0 4px 20px rgba(232,164,53,0.2);
+}
+.btn:hover{background:var(--amber2);box-shadow:0 6px 28px rgba(232,164,53,0.35);transform:translateY(-1px);}
+.btn:active{transform:translateY(0);}
+.btn-full{width:100%;justify-content:center;}
+.btn-ghost{background:transparent;border:1px solid var(--border2);color:var(--text2);box-shadow:none;}
+.btn-ghost:hover{border-color:var(--amber);color:var(--amber);background:var(--amber-glow);box-shadow:none;transform:none;}
+.btn-green{background:var(--green);color:#0a0a08;box-shadow:0 4px 20px rgba(76,175,125,0.2);}
+.btn-green:hover{background:#5cc98d;box-shadow:0 6px 28px rgba(76,175,125,0.35);}
 
-/* ─── MATCH INFO BAR ─── */
-.match-info-bar{background:rgba(59,130,246,.07);border:1px solid rgba(59,130,246,.22);border-radius:12px;padding:14px 16px;margin-bottom:16px;display:flex;flex-direction:column;gap:8px;}
-.match-info-row{display:flex;align-items:center;gap:10px;font-size:13px;}
-.match-info-icon{font-size:16px;}
+/* NUM PICKER */
+.num-row{display:flex;align-items:center;gap:10px;margin-bottom:20px;}
+.num-btns{display:flex;gap:4px;}
+.num-btn{
+  width:36px;height:36px;border-radius:6px;border:1px solid var(--border2);background:var(--surface2);
+  color:var(--text3);font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:500;
+  cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;
+}
+.num-btn:hover{border-color:var(--amber);color:var(--amber);}
+.num-btn.active{background:var(--amber);border-color:transparent;color:#0a0a08;}
+.num-lbl{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text3);}
 
-footer{text-align:center;padding:40px 0 24px;color:var(--muted);font-size:12px;border-top:1px solid var(--border);margin-top:48px;}
+/* CHIPS */
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:20px;}
+.chip{
+  padding:5px 12px;background:transparent;border:1px solid var(--border);border-radius:4px;
+  font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.05em;
+  color:var(--text3);cursor:pointer;transition:all .15s;
+}
+.chip:hover{border-color:var(--amber);color:var(--amber);background:var(--amber-glow);}
+
+/* BADGES */
+.badge{display:inline-block;padding:3px 10px;border-radius:4px;font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:500;letter-spacing:0.04em;margin:2px;}
+.b-amber{background:var(--amber-dim);color:var(--amber);border:1px solid rgba(232,164,53,0.2);}
+.b-green{background:var(--green-dim);color:var(--green);border:1px solid rgba(76,175,125,0.2);}
+.b-red{background:var(--red-dim);color:var(--red);border:1px solid rgba(224,82,82,0.2);}
+.b-blue{background:var(--blue-dim);color:var(--blue);border:1px solid rgba(91,141,217,0.2);}
+.b-muted{background:var(--surface2);color:var(--text2);border:1px solid var(--border);}
+
+/* PROGRESS */
+.prog-wrap{margin:10px 0;}
+.prog-meta{display:flex;justify-content:space-between;margin-bottom:6px;}
+.prog-meta span{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text3);}
+.prog-meta span:last-child{color:var(--text2);}
+.prog-track{width:100%;height:3px;background:var(--surface3);border-radius:99px;overflow:hidden;}
+.prog-fill{height:100%;border-radius:99px;background:var(--amber);transition:width .9s cubic-bezier(.4,0,.2,1);}
+.prog-fill.green{background:var(--green);}
+.prog-fill.blue{background:var(--blue);}
+
+/* RECIPE RESULT CARD */
+.rrc{
+  background:var(--surface);border:1px solid var(--border);border-radius:10px;
+  padding:20px 24px;margin-bottom:10px;cursor:pointer;transition:all .2s;
+  animation:fadeUp .3s ease both;position:relative;overflow:hidden;
+}
+.rrc::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--amber);opacity:0;transition:opacity .2s;}
+.rrc:hover{border-color:var(--border2);transform:translateX(3px);}
+.rrc:hover::before{opacity:1;}
+.rrc.selected{border-color:rgba(232,164,53,0.4);background:rgba(232,164,53,0.03);}
+.rrc.selected::before{opacity:1;}
+.rrc-top{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:12px;}
+.rrc-left{display:flex;align-items:center;gap:12px;}
+.rrc-rank{font-family:'Playfair Display',serif;font-size:20px;font-weight:700;color:var(--text3);width:28px;text-align:center;flex-shrink:0;}
+.rrc-name{font-family:'Playfair Display',serif;font-size:17px;font-weight:700;color:var(--text);line-height:1.2;}
+.rrc-desc{font-size:12px;color:var(--text2);margin-top:2px;line-height:1.5;}
+.score-tag{font-family:'IBM Plex Mono',monospace;font-size:14px;font-weight:500;color:var(--amber);white-space:nowrap;flex-shrink:0;}
+.rrc-badges{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:10px;}
+.rrc-hint{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text3);margin-top:8px;letter-spacing:0.04em;}
+
+/* INGREDIENT CHECKLIST */
+.ing-list{display:flex;flex-direction:column;gap:6px;margin-bottom:16px;}
+.ing-item{
+  background:var(--surface2);border:1px solid var(--border);border-radius:8px;
+  padding:11px 14px;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:12px;
+}
+.ing-item:hover{border-color:var(--border2);}
+.ing-item.checked{border-color:rgba(76,175,125,0.3);background:rgba(76,175,125,0.04);}
+.ing-check{width:18px;height:18px;border-radius:4px;border:1.5px solid var(--border2);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s;font-size:10px;}
+.ing-item.checked .ing-check{background:var(--green);border-color:var(--green);color:#0a0a08;}
+.ing-body{flex:1;min-width:0;}
+.ing-name{font-size:13px;font-weight:500;color:var(--text);}
+.ing-qty{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--amber);margin-top:2px;}
+.ing-role{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text3);margin-top:1px;}
+.ing-kcal{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text3);white-space:nowrap;flex-shrink:0;}
+
+/* SELECT ALL */
+.select-all{
+  display:flex;align-items:center;gap:12px;padding:11px 14px;background:var(--amber-glow);
+  border:1px solid rgba(232,164,53,0.15);border-radius:8px;margin-bottom:16px;cursor:pointer;transition:all .15s;
+}
+.select-all:hover{background:var(--amber-dim);}
+.sa-check{width:20px;height:20px;border-radius:4px;border:1.5px solid rgba(232,164,53,0.4);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s;font-size:11px;}
+.select-all.all-checked .sa-check{background:var(--amber);border-color:var(--amber);color:#0a0a08;}
+.sa-label{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--amber);letter-spacing:0.05em;}
+
+/* SERVING METER */
+.serving-row{margin-bottom:20px;}
+.serving-label{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text3);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:8px;}
+.serving-meter{display:inline-flex;border:1px solid var(--border2);border-radius:8px;overflow:hidden;}
+.srv-btn{padding:8px 18px;background:transparent;border:none;border-right:1px solid var(--border);color:var(--text3);font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:500;cursor:pointer;transition:all .15s;}
+.srv-btn:last-child{border-right:none;}
+.srv-btn:hover{color:var(--text);background:var(--surface2);}
+.srv-btn.active{background:var(--amber);color:#0a0a08;}
+
+/* NUTRITION GRID */
+.nutri-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:12px 0;}
+.nutri-box{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px 10px;text-align:center;}
+.nutri-val{font-family:'Playfair Display',serif;font-size:20px;font-weight:700;line-height:1.1;margin-bottom:4px;}
+.nutri-key{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:0.1em;}
+
+/* OVERVIEW HEADER */
+.ov-name{font-family:'Playfair Display',serif;font-size:26px;font-weight:900;line-height:1.15;margin-bottom:8px;color:var(--text);}
+.ov-desc{font-size:13px;color:var(--text2);line-height:1.7;margin-bottom:14px;}
+
+/* SUBSTITUTION */
+.sub-item{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:16px;margin-bottom:8px;}
+.sub-row{display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap;}
+.sub-arrow{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--text3);}
+.sub-note{font-size:12px;color:var(--text2);line-height:1.5;margin-top:6px;}
+
+/* STEPS */
+.step-item{border:1px solid var(--border);border-radius:8px;margin-bottom:8px;overflow:hidden;transition:border-color .2s;}
+.step-item:hover{border-color:var(--border2);}
+.step-item.open{border-color:rgba(232,164,53,0.25);}
+.step-head{padding:14px 18px;display:flex;align-items:center;gap:14px;cursor:pointer;user-select:none;background:var(--surface2);transition:background .15s;}
+.step-head:hover{background:var(--surface3);}
+.step-num-badge{
+  width:26px;height:26px;border-radius:6px;background:var(--surface3);border:1px solid var(--border2);
+  display:flex;align-items:center;justify-content:center;font-family:'IBM Plex Mono',monospace;
+  font-size:11px;color:var(--text3);flex-shrink:0;transition:all .2s;
+}
+.step-item.open .step-num-badge{background:var(--amber);border-color:transparent;color:#0a0a08;}
+.step-title{font-size:13px;font-weight:500;color:var(--text2);flex:1;transition:color .15s;}
+.step-item.open .step-title{color:var(--text);}
+.step-chevron{font-size:10px;color:var(--text3);transition:transform .2s;}
+.step-item.open .step-chevron{transform:rotate(90deg);}
+.step-body{display:none;padding:16px 18px 18px 58px;background:var(--surface);}
+.step-item.open .step-body{display:block;}
+.step-text{font-size:14px;color:var(--text);line-height:1.75;margin-bottom:10px;}
+.step-tip{background:rgba(91,141,217,0.07);border:1px solid rgba(91,141,217,0.15);border-radius:6px;padding:10px 14px;font-size:12px;color:var(--blue);font-family:'IBM Plex Mono',monospace;line-height:1.5;}
+
+/* ALERT BOXES */
+.info-box{background:rgba(91,141,217,0.06);border:1px solid rgba(91,141,217,0.15);border-radius:8px;padding:12px 16px;font-size:13px;color:var(--blue);margin-bottom:16px;}
+.warn-box{background:rgba(232,164,53,0.06);border:1px solid rgba(232,164,53,0.15);border-radius:8px;padding:12px 16px;font-size:13px;color:var(--amber);margin-bottom:8px;}
+.success-box{background:rgba(76,175,125,0.06);border:1px solid rgba(76,175,125,0.15);border-radius:8px;padding:12px 16px;font-size:13px;color:var(--green);margin-bottom:16px;}
+.error-box{background:rgba(224,82,82,0.06);border:1px solid rgba(224,82,82,0.15);border-radius:8px;padding:12px 16px;font-size:13px;color:var(--red);margin-bottom:16px;}
+
+/* MATCH BAR */
+.match-bar{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:16px;margin-bottom:16px;}
+.match-bar-label{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text3);letter-spacing:0.08em;margin-bottom:10px;text-transform:uppercase;}
+
+/* LOADING */
+.loading-wrap{padding:60px 20px;text-align:center;}
+.spinner{width:36px;height:36px;border:2px solid var(--border);border-top-color:var(--amber);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 20px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.loading-title{font-family:'Playfair Display',serif;font-size:18px;font-weight:700;color:var(--text);margin-bottom:4px;}
+.loading-sub{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text3);margin-bottom:24px;letter-spacing:0.06em;}
+.load-steps{display:flex;flex-direction:column;gap:10px;max-width:280px;margin:0 auto;text-align:left;}
+.load-step{display:flex;align-items:center;gap:10px;font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text3);}
+.ldot{width:6px;height:6px;border-radius:50%;background:var(--muted);flex-shrink:0;transition:background .3s;}
+.ldot.done{background:var(--green);}
+.ldot.active{background:var(--amber);animation:blink 1s infinite;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* EMPTY STATE */
+.empty-state{padding:80px 20px;text-align:center;border:1px dashed var(--border);border-radius:12px;}
+.empty-icon{font-family:'Playfair Display',serif;font-size:40px;color:var(--text3);margin-bottom:16px;display:block;}
+.empty-title{font-family:'Playfair Display',serif;font-size:18px;font-weight:700;color:var(--text3);margin-bottom:8px;}
+.empty-sub{font-size:13px;color:var(--text3);line-height:1.6;max-width:320px;margin:0 auto;}
+
+/* SCALE NOTE */
+.scale-note{display:inline-flex;align-items:center;gap:6px;font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--amber);background:var(--amber-glow);border:1px solid rgba(232,164,53,0.15);padding:4px 10px;border-radius:4px;margin-bottom:16px;letter-spacing:0.05em;}
+
+footer{text-align:center;padding:48px 0 28px;color:var(--text3);font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.08em;border-top:1px solid var(--border);margin-top:60px;text-transform:uppercase;}
 </style>
 </head>
 <body>
 <div class="container">
 
-<!-- HEADER -->
 <header>
-  <div class="logo-row">
-    <div class="logo-icon">🍽️</div>
-    <h1>Foodoscope</h1>
+  <div>
+    <div class="logo-row">
+      <div class="logo-mark">🍽</div>
+      <h1>Food<span>oscope</span></h1>
+    </div>
+    <p class="tagline">Smart Recipe &amp; Ingredient Analyzer — AlgoMinds ACDSS</p>
   </div>
-  <p class="subtitle">Smart Recipe &amp; Ingredient Analyzer — AI-powered, step-by-step, with real photos</p>
+  <div class="header-badge">v2.0 · Python + FastAPI</div>
 </header>
 
-<!-- MODE BAR -->
-<div class="mode-bar">
-  <div class="tab-group">
-    <button class="tab active" onclick="switchMode('recipe')">🔍 Recipe Search</button>
-    <button class="tab" onclick="switchMode('ingredient')">🥗 Ingredient Search</button>
-  </div>
-  <div class="select-wrap">
-    <select id="dietGoal">
-      <option value="Any">🎯 Any Goal</option>
-      <option value="Weight Loss">⚖️ Weight Loss</option>
-      <option value="Muscle Gain">💪 Muscle Gain</option>
-      <option value="Balanced">🌿 Balanced</option>
-      <option value="Vegan">🌱 Vegan</option>
+<div class="nav-bar">
+  <button class="nav-tab active" onclick="switchMode('recipe')">Recipe Search</button>
+  <button class="nav-tab" onclick="switchMode('ingredient')">Ingredient Search</button>
+  <div class="nav-right">
+    <select class="goal-select" id="dietGoal">
+      <option value="Any">Any Goal</option>
+      <option value="Weight Loss">Weight Loss</option>
+      <option value="Muscle Gain">Muscle Gain</option>
+      <option value="Balanced">Balanced</option>
+      <option value="Vegan">Vegan</option>
     </select>
   </div>
 </div>
 
-<!-- ═══════════ PANEL: RECIPE SEARCH ═══════════ -->
 <div class="panel active" id="panel-recipe">
   <div class="two-col">
-
-    <!-- LEFT: Input -->
     <div>
       <div class="card">
-        <div class="card-title">🍲 Recipe Input</div>
-        <label>Recipe Name</label>
+        <div class="card-label">Recipe Input</div>
+        <label class="field-label">Recipe Name</label>
         <input type="text" id="recipeName" placeholder="e.g. Paneer Butter Masala"/>
-        <label>How many recipe variations? <span style="color:var(--muted);text-transform:none;font-style:italic;">(1–5)</span></label>
-        <div class="num-picker-row">
+        <label class="field-label">Variations (1–5)</label>
+        <div class="num-row">
           <div class="num-btns" id="numPickerBtns">
             <button class="num-btn" onclick="pickNum(1)">1</button>
             <button class="num-btn" onclick="pickNum(2)">2</button>
@@ -265,39 +343,37 @@ footer{text-align:center;padding:40px 0 24px;color:var(--muted);font-size:12px;b
             <button class="num-btn" onclick="pickNum(4)">4</button>
             <button class="num-btn active" onclick="pickNum(5)">5</button>
           </div>
-          <span class="num-picker-label" id="numPickerLabel" style="color:var(--text2);font-size:13px;">5 recipes</span>
+          <span class="num-lbl" id="numPickerLabel">5 recipes</span>
         </div>
-        <div class="suggestions">
+        <label class="field-label">Quick Search</label>
+        <div class="chips">
           <span class="chip" onclick="setRecipeName('Paneer Butter Masala')">Paneer Butter Masala</span>
           <span class="chip" onclick="setRecipeName('Dal Tadka')">Dal Tadka</span>
           <span class="chip" onclick="setRecipeName('Aloo Paratha')">Aloo Paratha</span>
           <span class="chip" onclick="setRecipeName('Biryani')">Biryani</span>
+          <span class="chip" onclick="setRecipeName('Chicken Curry')">Chicken Curry</span>
           <span class="chip" onclick="setRecipeName('Pasta Carbonara')">Pasta Carbonara</span>
         </div>
-        <br/>
-        <button class="btn btn-full" onclick="searchRecipes()">🔍 Find Recipes</button>
+        <button class="btn btn-full" onclick="searchRecipes()">→ Find Recipes</button>
       </div>
     </div>
-
-    <!-- RIGHT: Output -->
     <div id="recipeOutput">
       <div class="empty-state">
-        <div class="empty-icon">🔬</div>
+        <span class="empty-icon">◎</span>
         <div class="empty-title">Ready to explore</div>
-        <div class="empty-sub">Enter a recipe name, choose how many variations you want (1–5), and click <strong>Find Recipes</strong>.<br><br>Then pick one to see the full ingredient checklist, nutrition, and step-by-step procedure.</div>
+        <div class="empty-sub">Enter a recipe name and click Find Recipes. Select a result to view ingredients, nutrition, and step-by-step procedure.</div>
       </div>
     </div>
-
   </div>
 </div>
 
-<!-- ═══════════ PANEL: INGREDIENT SEARCH ═══════════ -->
 <div class="panel" id="panel-ingredient">
   <div class="card">
-    <div class="card-title">🥗 What's In Your Kitchen?</div>
-    <label>Enter Your Ingredients <span style="color:var(--muted);font-style:italic;text-transform:none;">(comma separated)</span></label>
+    <div class="card-label">Ingredient Search</div>
+    <label class="field-label">Your Ingredients <span style="color:var(--text3);text-transform:none;font-family:'Inter';font-size:11px;">(comma separated)</span></label>
     <textarea id="ingredientInput" placeholder="e.g. paneer, tomato, butter, onion, garlic, lentils"></textarea>
-    <div class="suggestions">
+    <label class="field-label">Add Quickly</label>
+    <div class="chips">
       <span class="chip" onclick="addIngr('paneer')">+ paneer</span>
       <span class="chip" onclick="addIngr('tomato')">+ tomato</span>
       <span class="chip" onclick="addIngr('butter')">+ butter</span>
@@ -309,724 +385,387 @@ footer{text-align:center;padding:40px 0 24px;color:var(--muted);font-size:12px;b
       <span class="chip" onclick="addIngr('cream')">+ cream</span>
       <span class="chip" onclick="addIngr('chicken')">+ chicken</span>
     </div>
-    <br/>
-    <button class="btn btn-full" onclick="findByIngredients()" style="margin-top:8px;">🔍 Find Matching Recipes</button>
+    <button class="btn btn-full" onclick="findByIngredients()">→ Find Matching Recipes</button>
   </div>
   <div id="ingredientOutput"></div>
 </div>
 
-</div><!-- /container -->
-<footer>Foodoscope &nbsp;·&nbsp; AI-Powered Recipe Analyzer &nbsp;·&nbsp; Python + Claude API Backend &nbsp;🍴</footer>
+</div>
+<footer>Foodoscope &nbsp;·&nbsp; AlgoMinds ACDSS &nbsp;·&nbsp; Smart Recipe Decision Support System</footer>
 
 <script>
-// ════════════════════════════════════════════
-// STATE
-// ════════════════════════════════════════════
-let numRecipes = 5;
-let currentServingMult = 1;
-let currentRecipeData = null;
-let currentCheckedIngredients = new Set();
-let allIngredientsSelected = false;
+let numRecipes=5,currentServingMult=1,currentRecipeData=null,currentCheckedIngredients=new Set(),allIngredientsSelected=false;
+const API_BASE='http://localhost:8000';
 
-// ════════════════════════════════════════════
-// API CONFIG  ← replace with your Python backend URL
-// ════════════════════════════════════════════
-const API_BASE = 'http://localhost:8000';  // Python backend base URL
-
-/*
-  ══════════════════════════════════════════════════════
-  PYTHON BACKEND ENDPOINTS EXPECTED:
-
-  POST /api/search-recipes
-    body: { recipe_name, num_recipes, diet_goal }
-    returns: { recipes: [{ name, description, time, servings, difficulty,
-                diet, cuisine, match_score, nutrition:{calories,protein,carbs,fat} }] }
-
-  POST /api/recipe-detail
-    body: { recipe_name, checked_ingredients, serving_multiplier }
-    returns: {
-      overview: {name, description, time, servings, difficulty, diet, cuisine},
-      nutrition: {calories, protein, carbs, fat},
-      ingredients: [{name, qty, available, role, nutrition:{cal,pro,carb,fat}}],
-      substitutions: [{original, substitute, qty, score, note, role}],
-      procedure: [{title, instruction, tip}],
-      match_score: 80,
-      sub_count: 2
-    }
-
-  POST /api/find-by-ingredients
-    body: { ingredients: [], diet_goal, min_match: 50 }
-    returns: { recipes: [{ name, match_score, matched, missing,
-                nutrition:{calories,protein,carbs,fat}, diet, time }] }
-
-  ══════════════════════════════════════════════════════
-*/
-
-// ════════════════════════════════════════════
-// PHOTO HELPERS  (free picsum, no API key)
-// ════════════════════════════════════════════
-function heroPhoto(name){
-  const s=name.split('').reduce((a,c)=>a+c.charCodeAt(0),0)*7%9999;
-  return`https://picsum.photos/seed/${s+300}/900/420`;
-}
-function stepPhoto(name,i){
-  const s=(name+'s'+i).split('').reduce((a,c)=>a+c.charCodeAt(0),0)*13%9999;
-  return`https://picsum.photos/seed/${s}/640/340`;
-}
-
-// ════════════════════════════════════════════
-// INGREDIENT NUTRITION DB  (per base serving)
-// ════════════════════════════════════════════
 const IDB={
-  "paneer":{base:"200g",cal:296,pro:18,carb:3,fat:23},
-  "tomato":{base:"3 medium (300g)",cal:54,pro:2.7,carb:11.7,fat:0.6},
-  "butter":{base:"2 tbsp (28g)",cal:204,pro:0.2,carb:0,fat:23},
-  "cream":{base:"3 tbsp (45ml)",cal:195,pro:1.6,carb:1.8,fat:20},
-  "cashew paste":{base:"2 tbsp (30g)",cal:162,pro:5,carb:9,fat:13},
-  "garlic":{base:"4 cloves (12g)",cal:16,pro:0.7,carb:3.5,fat:0.1},
-  "lettuce":{base:"2 cups (80g)",cal:10,pro:0.9,carb:1.5,fat:0.2},
-  "cucumber":{base:"1 medium (200g)",cal:16,pro:0.7,carb:3,fat:0.1},
-  "olive oil":{base:"1 tbsp (14ml)",cal:124,pro:0,carb:0,fat:14},
-  "lentils":{base:"1 cup dry (200g)",cal:690,pro:50,carb:114,fat:3.6},
-  "onion":{base:"2 medium (200g)",cal:80,pro:2.2,carb:18.6,fat:0.2},
-  "cumin":{base:"1 tsp (3g)",cal:8,pro:0.4,carb:0.9,fat:0.4},
-  "turmeric":{base:"½ tsp (2g)",cal:6,pro:0.2,carb:1.3,fat:0.1},
-  "potato":{base:"2 large (400g)",cal:308,pro:8,carb:70,fat:0.4},
-  "flour":{base:"2 cups (240g)",cal:876,pro:25,carb:184,fat:3},
-  "oil":{base:"2 tbsp (28ml)",cal:240,pro:0,carb:0,fat:28},
-  "ginger":{base:"1 inch (10g)",cal:8,pro:0.2,carb:1.8,fat:0.1},
-  "chicken":{base:"300g",cal:495,pro:57,carb:0,fat:10},
-  "rice":{base:"1 cup (185g)",cal:679,pro:13,carb:150,fat:1.2},
-  "eggs":{base:"2 large",cal:140,pro:12,carb:0.8,fat:10},
-  "milk":{base:"1 cup (240ml)",cal:149,pro:8,carb:12,fat:8},
-  "sugar":{base:"2 tbsp (24g)",cal:93,pro:0,carb:24,fat:0},
-  "salt":{base:"to taste",cal:0,pro:0,carb:0,fat:0},
-  "water":{base:"as needed",cal:0,pro:0,carb:0,fat:0},
+  "paneer":{base:"200g",cal:296,pro:18,carb:3,fat:23},"tomato":{base:"3 medium",cal:54,pro:2.7,carb:11.7,fat:0.6},
+  "butter":{base:"2 tbsp",cal:204,pro:0.2,carb:0,fat:23},"cream":{base:"3 tbsp",cal:195,pro:1.6,carb:1.8,fat:20},
+  "cashew paste":{base:"2 tbsp",cal:162,pro:5,carb:9,fat:13},"garlic":{base:"4 cloves",cal:16,pro:0.7,carb:3.5,fat:0.1},
+  "lentils":{base:"1 cup dry",cal:690,pro:50,carb:114,fat:3.6},"onion":{base:"2 medium",cal:80,pro:2.2,carb:18.6,fat:0.2},
+  "cumin":{base:"1 tsp",cal:8,pro:0.4,carb:0.9,fat:0.4},"turmeric":{base:"½ tsp",cal:6,pro:0.2,carb:1.3,fat:0.1},
+  "potato":{base:"2 large",cal:308,pro:8,carb:70,fat:0.4},"flour":{base:"2 cups",cal:876,pro:25,carb:184,fat:3},
+  "oil":{base:"2 tbsp",cal:240,pro:0,carb:0,fat:28},"ginger":{base:"1 inch",cal:8,pro:0.2,carb:1.8,fat:0.1},
+  "chicken":{base:"300g",cal:495,pro:57,carb:0,fat:10},"rice":{base:"1 cup",cal:679,pro:13,carb:150,fat:1.2},
+  "eggs":{base:"2 large",cal:140,pro:12,carb:0.8,fat:10},"milk":{base:"1 cup",cal:149,pro:8,carb:12,fat:8},
+  "salt":{base:"to taste",cal:0,pro:0,carb:0,fat:0},"water":{base:"as needed",cal:0,pro:0,carb:0,fat:0},
 };
-
 function getNutr(name,m=1){
-  const k=name.toLowerCase().trim();
-  const n=IDB[k];
-  if(!n)return null;
-  return{
-    qty:m===1?n.base:`${n.base} (×${m})`,
-    cal:Math.round(n.cal*m),
-    pro:+(n.pro*m).toFixed(1),
-    carb:+(n.carb*m).toFixed(1),
-    fat:+(n.fat*m).toFixed(1)
-  };
+  const n=IDB[name.toLowerCase().trim()];if(!n)return null;
+  return{qty:m===1?n.base:`${n.base} ×${m}`,cal:Math.round(n.cal*m),pro:+(n.pro*m).toFixed(1),carb:+(n.carb*m).toFixed(1),fat:+(n.fat*m).toFixed(1)};
 }
 
-// ════════════════════════════════════════════
-// UI HELPERS
-// ════════════════════════════════════════════
 function switchMode(mode){
-  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
   document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
-  if(mode==='recipe'){
-    document.querySelectorAll('.tab')[0].classList.add('active');
-    document.getElementById('panel-recipe').classList.add('active');
-  }else{
-    document.querySelectorAll('.tab')[1].classList.add('active');
-    document.getElementById('panel-ingredient').classList.add('active');
-  }
+  if(mode==='recipe'){document.querySelectorAll('.nav-tab')[0].classList.add('active');document.getElementById('panel-recipe').classList.add('active');}
+  else{document.querySelectorAll('.nav-tab')[1].classList.add('active');document.getElementById('panel-ingredient').classList.add('active');}
 }
 function setRecipeName(n){document.getElementById('recipeName').value=n;}
-function addIngr(i){
-  const el=document.getElementById('ingredientInput');
-  const c=el.value.trim();
-  el.value=c?c+', '+i:i;
-}
+function addIngr(i){const el=document.getElementById('ingredientInput');const c=el.value.trim();el.value=c?c+', '+i:i;}
 function pickNum(n){
   numRecipes=n;
   document.querySelectorAll('#numPickerBtns .num-btn').forEach((b,i)=>b.classList.toggle('active',i+1===n));
   document.getElementById('numPickerLabel').textContent=n+' recipe'+(n===1?'':'s');
 }
-function animateBars(){
-  setTimeout(()=>document.querySelectorAll('.prog-fill').forEach(el=>el.style.width=el.dataset.target+'%'),80);
-}
+function animateBars(){setTimeout(()=>document.querySelectorAll('.prog-fill').forEach(el=>el.style.width=el.dataset.target+'%'),80);}
 function toggleStep(el){el.classList.toggle('open');}
 
-// ════════════════════════════════════════════
-// SERVING METER
-// ════════════════════════════════════════════
 const SRVS=[{l:'½×',v:.5},{l:'1×',v:1},{l:'2×',v:2},{l:'3×',v:3}];
 function servingMeterHTML(active){
-  return`<div class="serving-section">
-    <div class="serving-lbl">SCALE — Serving Size</div>
-    <div class="serving-meter" id="serving-meter">
-      ${SRVS.map(o=>`<button class="srv-btn ${o.v===active?'active':''}" onclick="changeServing(${o.v})">${o.l}</button>`).join('')}
-    </div>
-  </div>`;
+  return`<div class="serving-row"><div class="serving-label">Scale — Serving Size</div><div class="serving-meter" id="serving-meter">${SRVS.map(o=>`<button class="srv-btn ${o.v===active?'active':''}" onclick="changeServing(${o.v})">${o.l}</button>`).join('')}</div></div>`;
 }
 function changeServing(v){
   currentServingMult=v;
-  document.querySelectorAll('#serving-meter .srv-btn').forEach(b=>{
-    const map={'½×':.5,'1×':1,'2×':2,'3×':3};
-    b.classList.toggle('active',map[b.textContent.trim()]===v);
-  });
+  document.querySelectorAll('#serving-meter .srv-btn').forEach(b=>{const map={'½×':.5,'1×':1,'2×':2,'3×':3};b.classList.toggle('active',map[b.textContent.trim()]===v);});
   if(!currentRecipeData)return;
-  const w=document.getElementById('ing-dynamic');
-  if(w)w.innerHTML=buildIngList(currentRecipeData.ingredients,v);
-  const nt=document.getElementById('nutri-totals');
-  if(nt)nt.innerHTML=buildNutriGrid(currentRecipeData.nutrition,v);
-  const sn=document.getElementById('scale-note-el');
-  if(sn){sn.style.display=v!==1?'inline-flex':'none';sn.textContent='⚡ Scaled to '+v+'× serving';}
+  const w=document.getElementById('ing-dynamic');if(w)w.innerHTML=buildIngList(currentRecipeData.ingredients,v);
+  const nt=document.getElementById('nutri-totals');if(nt)nt.innerHTML=buildNutriGrid(currentRecipeData.nutrition,v);
+  const sn=document.getElementById('scale-note-el');if(sn){sn.style.display=v!==1?'inline-flex':'none';sn.textContent='Scaled to '+v+'× serving';}
 }
 
-// ════════════════════════════════════════════
-// INGREDIENT LIST BUILDER
-// ════════════════════════════════════════════
-function buildIngList(ingredients,m,fromRecipeSearch=false){
-  if(!ingredients||!ingredients.length)return'<p style="color:var(--muted);font-size:14px;">No ingredient data</p>';
+function buildIngList(ingredients,m,fromSearch=false){
+  if(!ingredients||!ingredients.length)return'<p style="color:var(--text3);font-size:13px;padding:8px 0;">No ingredient data available.</p>';
   return ingredients.map((ing,idx)=>{
-    const name=ing.name||ing;
-    const n=getNutr(name,m);
-    const apiQty=ing.qty?`${ing.qty}${m!==1?' (×'+m+')':''}`:null;
-    const qty=n?n.qty:apiQty||'to taste';
-    // in recipe search flow, nothing is pre-checked
-    const checked=fromRecipeSearch?currentCheckedIngredients.has(name):!!(ing.available);
-    return`
-    <div class="ing-item ${checked?'checked':''}" id="ing-${idx}" onclick="toggleIngCheck(${idx},'${name.replace(/'/g,"\\'")}')">
-      <div class="ing-top">
-        <div class="ing-checkbox">${checked?'✓':''}</div>
-        <div class="ing-info">
-          <div class="ing-name">${name}</div>
-          <div class="ing-qty">${qty}</div>
-          ${ing.role?`<div style="font-size:11px;color:var(--muted);margin-top:1px;">${ing.role}</div>`:''}
-        </div>
-        ${n&&n.cal>0?`<div class="ing-kcal-badge">${n.cal} kcal</div>`:''}
-      </div>
-      ${n&&n.cal>0?`<div class="ing-nutri-row">
-        <span class="nut-pill np-cal">🔥 ${n.cal}</span>
-        <span class="nut-pill np-pro">💪 ${n.pro}g</span>
-        <span class="nut-pill np-carb">🌾 ${n.carb}g</span>
-        <span class="nut-pill np-fat">🫙 ${n.fat}g</span>
-      </div>`:''}
+    const name=ing.name||ing;const n=getNutr(name,m);
+    const apiQty=ing.qty?`${ing.qty}${m!==1?' ×'+m:''}`:null;const qty=n?n.qty:apiQty||'as needed';
+    const checked=fromSearch?currentCheckedIngredients.has(name):!!(ing.available);
+    return`<div class="ing-item ${checked?'checked':''}" id="ing-${idx}" onclick="toggleIngCheck(${idx},'${name.replace(/'/g,"\\'")}')">
+      <div class="ing-check">${checked?'✓':''}</div>
+      <div class="ing-body"><div class="ing-name">${name}</div><div class="ing-qty">${qty}</div>${ing.role?`<div class="ing-role">${ing.role}</div>`:''}</div>
+      ${n&&n.cal>0?`<div class="ing-kcal">${n.cal} kcal</div>`:''}
     </div>`;
   }).join('');
 }
-
 function toggleIngCheck(idx,name){
-  if(currentCheckedIngredients.has(name)){
-    currentCheckedIngredients.delete(name);
-  }else{
-    currentCheckedIngredients.add(name);
-  }
+  if(currentCheckedIngredients.has(name))currentCheckedIngredients.delete(name);else currentCheckedIngredients.add(name);
   const el=document.getElementById('ing-'+idx);
-  if(el){
-    el.classList.toggle('checked',currentCheckedIngredients.has(name));
-    const cb=el.querySelector('.ing-checkbox');
-    if(cb)cb.textContent=currentCheckedIngredients.has(name)?'✓':'';
-  }
+  if(el){el.classList.toggle('checked',currentCheckedIngredients.has(name));const cb=el.querySelector('.ing-check');if(cb)cb.textContent=currentCheckedIngredients.has(name)?'✓':'';}
   updateSelectAllState();
 }
-
 function toggleSelectAll(){
-  const saRow=document.getElementById('select-all-row');
-  const ingredients=currentRecipeData?currentRecipeData.ingredients:[];
+  const saRow=document.getElementById('select-all-row');const ingredients=currentRecipeData?currentRecipeData.ingredients:[];
   if(allIngredientsSelected){
-    allIngredientsSelected=false;
-    currentCheckedIngredients.clear();
-    saRow.classList.remove('all-checked');
-    saRow.querySelector('.select-all-checkbox').textContent='';
-    saRow.querySelector('.select-all-label').textContent='Select All Ingredients';
+    allIngredientsSelected=false;currentCheckedIngredients.clear();saRow.classList.remove('all-checked');
+    saRow.querySelector('.sa-check').textContent='';saRow.querySelector('.sa-label').textContent='Select All Ingredients';
   }else{
-    allIngredientsSelected=true;
-    ingredients.forEach(i=>currentCheckedIngredients.add(i.name||i));
-    saRow.classList.add('all-checked');
-    saRow.querySelector('.select-all-checkbox').textContent='✓';
-    saRow.querySelector('.select-all-label').textContent='All Ingredients Selected ✓';
+    allIngredientsSelected=true;ingredients.forEach(i=>currentCheckedIngredients.add(i.name||i));saRow.classList.add('all-checked');
+    saRow.querySelector('.sa-check').textContent='✓';saRow.querySelector('.sa-label').textContent='All Selected';
   }
-  // Re-render ingredient list
-  const w=document.getElementById('ing-dynamic');
-  if(w&&currentRecipeData)w.innerHTML=buildIngList(currentRecipeData.ingredients,currentServingMult,true);
+  const w=document.getElementById('ing-dynamic');if(w&&currentRecipeData)w.innerHTML=buildIngList(currentRecipeData.ingredients,currentServingMult,true);
 }
-
 function updateSelectAllState(){
-  if(!currentRecipeData)return;
-  const total=currentRecipeData.ingredients.length;
-  const checked=currentCheckedIngredients.size;
-  allIngredientsSelected=(checked>=total);
-  const saRow=document.getElementById('select-all-row');
-  if(!saRow)return;
+  if(!currentRecipeData)return;allIngredientsSelected=(currentCheckedIngredients.size>=currentRecipeData.ingredients.length);
+  const saRow=document.getElementById('select-all-row');if(!saRow)return;
   saRow.classList.toggle('all-checked',allIngredientsSelected);
-  saRow.querySelector('.select-all-checkbox').textContent=allIngredientsSelected?'✓':'';
-  saRow.querySelector('.select-all-label').textContent=allIngredientsSelected?'All Ingredients Selected ✓':'Select All Ingredients';
+  saRow.querySelector('.sa-check').textContent=allIngredientsSelected?'✓':'';
+  saRow.querySelector('.sa-label').textContent=allIngredientsSelected?'All Selected':'Select All Ingredients';
 }
 
-// ════════════════════════════════════════════
-// NUTRITION GRID
-// ════════════════════════════════════════════
 function buildNutriGrid(n,m){
   return`<div class="nutri-grid">
-    <div class="nutri-box"><div class="nutri-val" style="color:#fb923c">${Math.round(n.calories*m)}</div><div class="nutri-lbl">Calories</div></div>
-    <div class="nutri-box"><div class="nutri-val" style="color:#4ade80">${+(n.protein*m).toFixed(1)}g</div><div class="nutri-lbl">Protein</div></div>
-    <div class="nutri-box"><div class="nutri-val" style="color:#60a5fa">${+(n.carbs*m).toFixed(1)}g</div><div class="nutri-lbl">Carbs</div></div>
-    <div class="nutri-box"><div class="nutri-val" style="color:#facc15">${+(n.fat*m).toFixed(1)}g</div><div class="nutri-lbl">Fat</div></div>
+    <div class="nutri-box"><div class="nutri-val" style="color:var(--amber)">${Math.round(n.calories*m)}</div><div class="nutri-key">Calories</div></div>
+    <div class="nutri-box"><div class="nutri-val" style="color:var(--green)">${+(n.protein*m).toFixed(1)}g</div><div class="nutri-key">Protein</div></div>
+    <div class="nutri-box"><div class="nutri-val" style="color:var(--blue)">${+(n.carbs*m).toFixed(1)}g</div><div class="nutri-key">Carbs</div></div>
+    <div class="nutri-box"><div class="nutri-val" style="color:var(--text2)">${+(n.fat*m).toFixed(1)}g</div><div class="nutri-key">Fat</div></div>
   </div>`;
 }
 
-// ════════════════════════════════════════════
-// LOADING STATE
-// ════════════════════════════════════════════
-const STEPS_SEARCH=['🔍 Searching recipe database…','✨ Generating recipe variants…','📊 Calculating match scores…','🎨 Preparing results…'];
-const STEPS_DETAIL=['📋 Loading recipe overview…','🥗 Fetching ingredients & nutrition…','🔄 Analyzing substitutions…','📖 Building step-by-step procedure…','📸 Sourcing step photos…'];
-
+const STEPS_SEARCH=['Searching recipe database','Generating recipe variants','Calculating match scores','Preparing results'];
+const STEPS_DETAIL=['Loading recipe overview','Fetching ingredients','Analyzing substitutions','Building procedure'];
 function showLoading(output,steps){
-  output.innerHTML=`<div class="card loading-card">
-    <div class="spinner"></div>
-    <div class="loading-title">AI is working…</div>
-    <div class="loading-sub">Powered by Claude API</div>
-    <div class="load-steps">
-      ${steps.map((s,i)=>`<div class="load-step" id="ls${i}"><div class="ldot" id="ld${i}"></div><span>${s}</span></div>`).join('')}
-    </div>
-  </div>`;
-  let st=0;
-  const iv=setInterval(()=>{
+  output.innerHTML=`<div class="card loading-wrap"><div class="spinner"></div><div class="loading-title">Analyzing…</div><div class="loading-sub">Powered by Foodoscope API</div><div class="load-steps">${steps.map((s,i)=>`<div class="load-step" id="ls${i}"><div class="ldot" id="ld${i}"></div><span>${s}</span></div>`).join('')}</div></div>`;
+  let st=0;const iv=setInterval(()=>{
     if(st>0){const p=document.getElementById('ld'+(st-1));if(p)p.className='ldot done';}
-    const c=document.getElementById('ld'+st);
-    if(c){c.className='ldot active';const sp=document.querySelector('#ls'+st+' span');if(sp)sp.style.color='var(--text)';}
+    const c=document.getElementById('ld'+st);if(c){c.className='ldot active';const sp=document.querySelector('#ls'+st+' span');if(sp)sp.style.color='var(--text2)';}
     st++;if(st>=steps.length)clearInterval(iv);
-  },650);
-  return iv;
+  },650);return iv;
 }
 
-// ════════════════════════════════════════════
-// API CALLS  (calls Python backend)
-// ════════════════════════════════════════════
 async function apiCall(endpoint,body){
-  const r=await fetch(API_BASE+endpoint,{
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify(body)
-  });
-  if(!r.ok)throw new Error('HTTP '+r.status);
-  return r.json();
+  const r=await fetch(API_BASE+endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+  if(!r.ok)throw new Error('HTTP '+r.status);return r.json();
 }
 
-// ════════════════════════════════════════════
-// FALLBACK DATA (used when API is unavailable)
-// ════════════════════════════════════════════
 function fallbackSearchResults(name,count){
-  const variants=[
-    {name:`Classic ${name}`,description:`The traditional preparation of ${name} with authentic spices and slow-cooked depth.`,time:'35 min',servings:4,difficulty:'Medium',diet:'Balanced',cuisine:'Indian',match_score:92,nutrition:{calories:380,protein:16,carbs:42,fat:14}},
-    {name:`Restaurant-Style ${name}`,description:`Elevated version of ${name} with premium ingredients and chef techniques.`,time:'45 min',servings:4,difficulty:'Hard',diet:'Balanced',cuisine:'Indian',match_score:85,nutrition:{calories:420,protein:18,carbs:38,fat:18}},
-    {name:`Quick ${name}`,description:`A 20-minute version of ${name} that doesn't compromise on flavor.`,time:'20 min',servings:2,difficulty:'Easy',diet:'Balanced',cuisine:'Indian',match_score:78,nutrition:{calories:340,protein:14,carbs:40,fat:12}},
-    {name:`Healthy ${name}`,description:`Low-calorie adaptation of ${name} using lighter substitutions.`,time:'30 min',servings:3,difficulty:'Easy',diet:'Weight Loss',cuisine:'Indian',match_score:72,nutrition:{calories:260,protein:20,carbs:30,fat:6}},
-    {name:`Vegan ${name}`,description:`A fully plant-based take on ${name} that's rich and satisfying.`,time:'35 min',servings:4,difficulty:'Medium',diet:'Vegan',cuisine:'Indian',match_score:65,nutrition:{calories:310,protein:12,carbs:46,fat:9}},
-  ];
-  return{recipes:variants.slice(0,count)};
+  const v=[
+    {name:`Classic ${name}`,description:'Traditional preparation with authentic spices.',time:'35 min',servings:4,difficulty:'Medium',diet:'Balanced',cuisine:'Indian',match_score:92,nutrition:{calories:380,protein:16,carbs:42,fat:14}},
+    {name:`Restaurant-Style ${name}`,description:'Elevated version with premium ingredients.',time:'45 min',servings:4,difficulty:'Hard',diet:'Balanced',cuisine:'Indian',match_score:85,nutrition:{calories:420,protein:18,carbs:38,fat:18}},
+    {name:`Quick ${name}`,description:'20-minute version without compromise on flavor.',time:'20 min',servings:2,difficulty:'Easy',diet:'Balanced',cuisine:'Indian',match_score:78,nutrition:{calories:340,protein:14,carbs:40,fat:12}},
+    {name:`Healthy ${name}`,description:'Low-calorie adaptation with lighter substitutions.',time:'30 min',servings:3,difficulty:'Easy',diet:'Weight Loss',cuisine:'Indian',match_score:72,nutrition:{calories:260,protein:20,carbs:30,fat:6}},
+    {name:`Vegan ${name}`,description:'Fully plant-based — rich and satisfying.',time:'35 min',servings:4,difficulty:'Medium',diet:'Vegan',cuisine:'Indian',match_score:65,nutrition:{calories:310,protein:12,carbs:46,fat:9}},
+  ];return{recipes:v.slice(0,count)};
 }
-
 function fallbackRecipeDetail(name){
   return{
-    overview:{name,description:`A rich, flavorful ${name} with aromatic spices and fresh ingredients. Perfect comfort food.`,time:'35 min',servings:4,difficulty:'Medium',diet:'Balanced',cuisine:'Indian'},
+    overview:{name,description:`A rich, flavorful ${name} with aromatic spices and fresh ingredients.`,time:'35 min',servings:4,difficulty:'Medium',diet:'Balanced',cuisine:'Indian'},
     nutrition:{calories:380,protein:16,carbs:42,fat:14},
     ingredients:[
-      {name:'onion',qty:'2 medium',available:false,role:'Flavor base'},
-      {name:'tomato',qty:'3 large',available:false,role:'Gravy body'},
-      {name:'garlic',qty:'4 cloves',available:false,role:'Pungent depth'},
-      {name:'ginger',qty:'1 inch',available:false,role:'Freshness'},
-      {name:'oil',qty:'2 tbsp',available:false,role:'Cooking fat'},
-      {name:'cumin',qty:'1 tsp',available:false,role:'Earthy base note'},
+      {name:'onion',qty:'2 medium',available:false,role:'Flavor base'},{name:'tomato',qty:'3 large',available:false,role:'Gravy body'},
+      {name:'garlic',qty:'4 cloves',available:false,role:'Pungent depth'},{name:'ginger',qty:'1 inch',available:false,role:'Freshness'},
+      {name:'oil',qty:'2 tbsp',available:false,role:'Cooking fat'},{name:'cumin',qty:'1 tsp',available:false,role:'Earthy base note'},
       {name:'turmeric',qty:'½ tsp',available:false,role:'Color & health'},
     ],
     substitutions:[
-      {original:'garlic',substitute:'garlic powder',qty:'½ tsp per clove',score:85,note:'Slightly milder, works well',role:'Pungent depth'},
-      {original:'ginger',substitute:'ground ginger',qty:'½ tsp per 1 inch',score:78,note:'Less fresh flavor but convenient',role:'Freshness & warmth'},
+      {original:'garlic',substitute:'garlic powder',qty:'½ tsp per clove',score:85,note:'Slightly milder, works well in most dishes.',role:'Pungent depth'},
+      {original:'ginger',substitute:'ground ginger',qty:'½ tsp per inch',score:78,note:'Less fresh flavor but convenient.',role:'Freshness & warmth'},
     ],
     procedure:[
-      {title:'Prep & Chop',instruction:`Wash and chop all vegetables for ${name}. Finely dice onions, cube tomatoes, mince garlic and ginger. Keep spices measured and ready.`,tip:'Uniform cuts ensure even cooking.'},
-      {title:'Temper the Spices',instruction:'Heat oil in a heavy pan. Add cumin seeds and let them splutter. The aroma should bloom within seconds.',tip:'Medium heat prevents burning.'},
-      {title:'Sauté the Base',instruction:'Add onions and cook until deep golden, about 8 minutes. Add garlic and ginger, cook 2 more minutes.',tip:'Golden onions are the secret to deep flavor.'},
-      {title:'Build the Gravy',instruction:'Add tomatoes and cook on medium-high until oil separates, about 10 minutes. Add all spices and stir well.',tip:'Oil separating signals fully cooked tomatoes.'},
-      {title:'Finish & Serve',instruction:`Complete the ${name} by adding your main ingredient, simmering 10 minutes, and adjusting seasoning. Garnish with fresh herbs.`,tip:'A squeeze of lemon at the end brightens the dish.'},
+      {title:'Prep & Chop',instruction:`Wash and chop all vegetables. Finely dice onions, cube tomatoes, mince garlic and ginger. Measure spices in advance.`,tip:'Uniform cuts ensure even cooking.'},
+      {title:'Temper the Spices',instruction:'Heat oil in a heavy pan over medium heat. Add cumin seeds and let them splutter — about 30 seconds.',tip:'Medium heat prevents burning.'},
+      {title:'Build the Base',instruction:'Add onions and cook until deep golden, about 8 minutes. Add garlic and ginger, cook 2 more minutes until fragrant.',tip:'Golden onions are the foundation of deep flavor.'},
+      {title:'Add the Gravy',instruction:'Add tomatoes and cook on medium-high until oil separates, about 10 minutes. Add all ground spices and stir well.',tip:'Oil separating means tomatoes are fully cooked.'},
+      {title:'Finish & Serve',instruction:`Add your main ingredient, simmer 10 minutes, adjust seasoning. Garnish with fresh coriander.`,tip:'A squeeze of lemon brightens the dish at the end.'},
     ],
-    match_score:0,
-    sub_count:2
+    match_score:0,sub_count:2
   };
 }
-
 function fallbackByIngredients(ingredients){
-  const recipeDb=[
+  const db=[
     {name:'Paneer Butter Masala',ingredients:['paneer','tomato','butter','cream','cashew paste','garlic'],nutrition:{calories:420,protein:18,carbs:14,fat:32},diet:'Muscle Gain',time:'30 min'},
-    {name:'Veg Salad',ingredients:['lettuce','tomato','cucumber','olive oil'],nutrition:{calories:180,protein:5,carbs:12,fat:10},diet:'Weight Loss',time:'10 min'},
     {name:'Dal Tadka',ingredients:['lentils','onion','tomato','garlic','cumin','turmeric'],nutrition:{calories:290,protein:14,carbs:40,fat:8},diet:'Balanced',time:'25 min'},
     {name:'Aloo Paratha',ingredients:['potato','flour','butter','onion','cumin'],nutrition:{calories:380,protein:8,carbs:58,fat:14},diet:'Balanced',time:'40 min'},
-    {name:'Garlic Onion Sabzi',ingredients:['onion','garlic','tomato','oil','cumin'],nutrition:{calories:150,protein:4,carbs:20,fat:6},diet:'Balanced',time:'15 min'},
-    {name:'Simple Lentil Soup',ingredients:['lentils','onion','garlic','turmeric','oil'],nutrition:{calories:260,protein:18,carbs:38,fat:5},diet:'Weight Loss',time:'20 min'},
     {name:'Butter Chicken',ingredients:['chicken','butter','cream','tomato','garlic','ginger'],nutrition:{calories:460,protein:38,carbs:12,fat:28},diet:'Muscle Gain',time:'40 min'},
     {name:'Jeera Rice',ingredients:['rice','cumin','oil','garlic','water'],nutrition:{calories:340,protein:7,carbs:68,fat:5},diet:'Balanced',time:'20 min'},
   ];
   const userSet=new Set(ingredients.map(i=>i.toLowerCase().trim()));
-  const results=recipeDb.map(r=>{
-    const rSet=new Set(r.ingredients);
-    const matched=[...rSet].filter(i=>userSet.has(i));
+  const results=db.map(r=>{
+    const rSet=new Set(r.ingredients);const matched=[...rSet].filter(i=>userSet.has(i));
     const score=Math.round((matched.length/rSet.size)*100);
     return{name:r.name,match_score:score,matched,missing:[...rSet].filter(i=>!userSet.has(i)),nutrition:r.nutrition,diet:r.diet,time:r.time};
   }).filter(r=>r.match_score>=50).sort((a,b)=>b.match_score-a.match_score).slice(0,5);
   return{recipes:results};
 }
 
-// ════════════════════════════════════════════
-// STEP 1 — RECIPE SEARCH: show list of recipes
-// ════════════════════════════════════════════
 async function searchRecipes(){
-  const name=document.getElementById('recipeName').value.trim();
-  const dietGoal=document.getElementById('dietGoal').value;
+  const name=document.getElementById('recipeName').value.trim();const dietGoal=document.getElementById('dietGoal').value;
   const output=document.getElementById('recipeOutput');
-  if(!name){output.innerHTML=`<div class="error-box">⚠️ Please enter a recipe name first.</div>`;return;}
-  const iv=showLoading(output,STEPS_SEARCH);
-  let data;
-  try{
-    data=await apiCall('/api/search-recipes',{recipe_name:name,num_recipes:numRecipes,diet_goal:dietGoal});
-  }catch(e){
-    data=fallbackSearchResults(name,numRecipes);
-  }
-  clearInterval(iv);
-  renderRecipeList(data.recipes,output);
+  if(!name){output.innerHTML=`<div class="error-box">Please enter a recipe name first.</div>`;return;}
+  const iv=showLoading(output,STEPS_SEARCH);let data;
+  try{data=await apiCall('/api/search-recipes',{recipe_name:name,num_recipes:numRecipes,diet_goal:dietGoal});}
+  catch(e){data=fallbackSearchResults(name,numRecipes);}
+  clearInterval(iv);renderRecipeList(data.recipes,output);
 }
 
 function renderRecipeList(recipes,output){
   if(!recipes||!recipes.length){
-    output.innerHTML=`<div class="card"><div style="text-align:center;color:var(--muted);font-size:14px;">No recipes found. Try a different name.</div></div>`;
-    return;
+    output.innerHTML=`<div class="card"><div style="text-align:center;color:var(--text3);font-size:14px;padding:20px 0;">No recipes found. Try a different search term.</div></div>`;return;
   }
-  const RANKS=['🥇','🥈','🥉','4️⃣','5️⃣'];
-  const dietGoal=document.getElementById('dietGoal').value;
+  const RANKS=['I','II','III','IV','V'];const dietGoal=document.getElementById('dietGoal').value;
   output.innerHTML=`
-    <div style="font-family:'Syne',sans-serif;font-size:17px;font-weight:700;margin-bottom:14px;">
-      Found ${recipes.length} recipe${recipes.length>1?'s':''}
-    </div>
-    <div class="info-box" style="margin-bottom:16px;">👆 Click any recipe card to see the full ingredient checklist, nutrition, and step-by-step procedure.</div>
+    <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text3);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:16px;">${recipes.length} result${recipes.length>1?'s':''} found</div>
+    <div class="info-box">Select a recipe to see the ingredient checklist, nutrition, and step-by-step procedure.</div>
     ${recipes.map((r,i)=>{
-      const scoreColor=r.match_score>=80?'green':r.match_score>=60?'':'blue';
-      const warn=dietGoal!=='Any'&&r.diet!==dietGoal?`<div class="warn-box" style="margin-top:8px;padding:8px 12px;font-size:12px;">⚠️ Tagged as <strong>${r.diet}</strong>, not ${dietGoal}</div>`:'';
-      return`
-      <div class="recipe-result-card" onclick="loadRecipeDetail('${r.name.replace(/'/g,"\\'")}',this)" style="animation-delay:${i*.08}s">
-        <div class="rrc-header">
-          <div class="rrc-rank-name">
-            <div class="rrc-rank">${RANKS[i]||'📌'}</div>
-            <div class="rrc-name">${r.name}</div>
+      const cc=r.match_score>=80?'green':r.match_score>=60?'':'blue';
+      const warn=dietGoal!=='Any'&&r.diet!==dietGoal?`<div class="warn-box" style="margin-top:8px;font-size:12px;">Tagged as ${r.diet}, not ${dietGoal}</div>`:'';
+      return`<div class="rrc" onclick="loadRecipeDetail('${r.name.replace(/'/g,"\\'")}',this)" style="animation-delay:${i*.07}s">
+        <div class="rrc-top">
+          <div class="rrc-left"><div class="rrc-rank">${RANKS[i]||i+1}</div>
+            <div><div class="rrc-name">${r.name}</div>${r.description?`<div class="rrc-desc">${r.description}</div>`:''}</div>
           </div>
-          <div class="score-pill">${r.match_score}%</div>
+          <div class="score-tag">${r.match_score}%</div>
         </div>
         <div class="rrc-badges">
-          <span class="badge b-blue">🔥 ${r.nutrition.calories} kcal</span>
-          <span class="badge b-green">💪 ${r.nutrition.protein}g protein</span>
-          <span class="badge b-yellow">${r.diet}</span>
-          <span class="badge b-orange">⏱ ${r.time}</span>
-          <span class="badge b-purple">${r.difficulty||'Medium'}</span>
+          <span class="badge b-amber">${r.nutrition.calories} kcal</span>
+          <span class="badge b-green">${r.nutrition.protein}g protein</span>
+          <span class="badge b-muted">${r.diet}</span>
+          <span class="badge b-muted">${r.time}</span>
+          <span class="badge b-muted">${r.difficulty||'Medium'}</span>
+          <span class="badge b-muted">${r.cuisine||'International'}</span>
         </div>
         <div class="prog-wrap">
-          <div class="prog-label"><span>Match Score</span><span>${r.match_score}%</span></div>
-          <div class="prog-bar"><div class="prog-fill ${scoreColor}" style="width:0%" data-target="${r.match_score}"></div></div>
+          <div class="prog-meta"><span>Match Score</span><span>${r.match_score}%</span></div>
+          <div class="prog-track"><div class="prog-fill ${cc}" style="width:0%" data-target="${r.match_score}"></div></div>
         </div>
-        <div class="rrc-click-hint">→ Click to view ingredients checklist &amp; full recipe</div>
-        ${r.description?`<div style="font-size:12px;color:var(--muted);margin-top:6px;line-height:1.5;">${r.description}</div>`:''}
-        ${warn}
+        <div class="rrc-hint">→ Click to view ingredient checklist and full recipe</div>${warn}
       </div>`;
     }).join('')}`;
   animateBars();
 }
 
-// ════════════════════════════════════════════
-// STEP 2 — LOAD RECIPE DETAIL: checklist view
-// ════════════════════════════════════════════
-async function loadRecipeDetail(recipeName, cardEl){
-  // Highlight selected card
-  document.querySelectorAll('.recipe-result-card').forEach(c=>c.style.borderColor='');
-  if(cardEl)cardEl.style.borderColor='rgba(249,115,22,.6)';
-
-  // Scroll to below the card list
+async function loadRecipeDetail(recipeName,cardEl){
+  document.querySelectorAll('.rrc').forEach(c=>c.classList.remove('selected'));if(cardEl)cardEl.classList.add('selected');
   const output=document.getElementById('recipeOutput');
-  // Remove previous checklist section if any
-  const existing=document.getElementById('checklist-section');
-  if(existing)existing.remove();
-
-  // Build checklist placeholder
-  const checklistDiv=document.createElement('div');
-  checklistDiv.id='checklist-section';
-  checklistDiv.style.marginTop='20px';
-  output.appendChild(checklistDiv);
+  const existing=document.getElementById('checklist-section');if(existing)existing.remove();
+  const checklistDiv=document.createElement('div');checklistDiv.id='checklist-section';checklistDiv.style.marginTop='20px';output.appendChild(checklistDiv);
   checklistDiv.scrollIntoView({behavior:'smooth',block:'start'});
-
-  const iv=showLoading(checklistDiv,STEPS_DETAIL.slice(0,2));
-  let data;
-  try{
-    data=await apiCall('/api/recipe-detail',{recipe_name:recipeName,checked_ingredients:[],serving_multiplier:1});
-  }catch(e){
-    data=fallbackRecipeDetail(recipeName);
-  }
-  clearInterval(iv);
-
-  currentRecipeData=data;
-  currentCheckedIngredients=new Set();
-  allIngredientsSelected=false;
-  currentServingMult=1;
-
+  const iv=showLoading(checklistDiv,STEPS_DETAIL.slice(0,2));let data;
+  try{data=await apiCall('/api/recipe-detail',{recipe_name:recipeName,checked_ingredients:[],serving_multiplier:1});}
+  catch(e){data=fallbackRecipeDetail(recipeName);}
+  clearInterval(iv);currentRecipeData=data;currentCheckedIngredients=new Set();allIngredientsSelected=false;currentServingMult=1;
   renderChecklistSection(checklistDiv,data,recipeName);
 }
 
 function renderChecklistSection(container,data,recipeName){
   container.innerHTML=`
-    <div class="card" style="border-color:rgba(249,115,22,.25);">
-      <div class="card-title">🧾 Ingredients Checklist — <span style="color:var(--accent)">${recipeName}</span></div>
-      <div style="font-size:13px;color:var(--text2);margin-bottom:16px;">Tick the ingredients you have available, then click <strong>Show Recipe</strong>.</div>
-
+    <div class="card" style="border-color:rgba(232,164,53,0.2);">
+      <div class="card-label">Ingredients Checklist</div>
+      <div style="font-family:'Playfair Display',serif;font-size:20px;font-weight:700;color:var(--text);margin-bottom:6px;">${recipeName}</div>
+      <div style="font-size:13px;color:var(--text2);margin-bottom:20px;">Tick the ingredients you have at home, then click Show Full Recipe.</div>
       ${servingMeterHTML(1)}
-
       <div id="scale-note-el" class="scale-note" style="display:none"></div>
-
-      <div class="ing-list" id="ing-dynamic">
-        ${buildIngList(data.ingredients,1,true)}
-      </div>
-
-      <!-- SELECT ALL -->
-      <div class="select-all-row" id="select-all-row" onclick="toggleSelectAll()">
-        <div class="select-all-checkbox"></div>
-        <div class="select-all-label">Select All Ingredients</div>
-      </div>
-
-      <button class="btn btn-full btn-green" onclick="showFullRecipe('${recipeName.replace(/'/g,"\\'")}')">
-        ✅ Show Full Recipe
-      </button>
-    </div>
-  `;
+      <div class="ing-list" id="ing-dynamic">${buildIngList(data.ingredients,1,true)}</div>
+      <div class="select-all" id="select-all-row" onclick="toggleSelectAll()"><div class="sa-check"></div><div class="sa-label">Select All Ingredients</div></div>
+      <button class="btn btn-full btn-green" onclick="showFullRecipe('${recipeName.replace(/'/g,"\\'")}')">✓ Show Full Recipe</button>
+    </div>`;
   container.scrollIntoView({behavior:'smooth',block:'start'});
 }
 
-// ════════════════════════════════════════════
-// STEP 3 — SHOW FULL RECIPE
-// ════════════════════════════════════════════
 async function showFullRecipe(recipeName){
-  const existing=document.getElementById('full-recipe-section');
-  if(existing)existing.remove();
-
-  const output=document.getElementById('recipeOutput');
-  const fullDiv=document.createElement('div');
-  fullDiv.id='full-recipe-section';
-  fullDiv.style.marginTop='20px';
-  output.appendChild(fullDiv);
+  const existing=document.getElementById('full-recipe-section');if(existing)existing.remove();
+  const output=document.getElementById('recipeOutput');const fullDiv=document.createElement('div');
+  fullDiv.id='full-recipe-section';fullDiv.style.marginTop='20px';output.appendChild(fullDiv);
   fullDiv.scrollIntoView({behavior:'smooth',block:'start'});
-
-  const iv=showLoading(fullDiv,STEPS_DETAIL);
-  const checkedList=[...currentCheckedIngredients];
-  let data;
-  try{
-    data=await apiCall('/api/recipe-detail',{
-      recipe_name:recipeName,
-      checked_ingredients:checkedList,
-      serving_multiplier:currentServingMult
-    });
-  }catch(e){
-    data=currentRecipeData||fallbackRecipeDetail(recipeName);
-  }
-  clearInterval(iv);
-  currentRecipeData=data;
-
-  renderFullRecipe(fullDiv,data,recipeName,checkedList);
+  const iv=showLoading(fullDiv,STEPS_DETAIL);const checkedList=[...currentCheckedIngredients];let data;
+  try{data=await apiCall('/api/recipe-detail',{recipe_name:recipeName,checked_ingredients:checkedList,serving_multiplier:currentServingMult});}
+  catch(e){data=currentRecipeData||fallbackRecipeDetail(recipeName);}
+  clearInterval(iv);currentRecipeData=data;renderFullRecipe(fullDiv,data,recipeName,checkedList);
 }
 
 function renderFullRecipe(container,recipe,recipeName,checkedList){
-  const ov=recipe.overview;
-  const n=recipe.nutrition;
-  const m=currentServingMult;
+  const ov=recipe.overview;const n=recipe.nutrition;const m=currentServingMult;
   const allSelected=checkedList.length>0&&currentRecipeData&&checkedList.length>=currentRecipeData.ingredients.length;
-  const matchScore=recipe.match_score||0;
-  const subCount=recipe.sub_count||0;
-
-  // Substitution section
+  const matchScore=recipe.match_score||0;const subCount=recipe.sub_count||0;
   let subHTML='';
   if(!allSelected){
     if(!recipe.substitutions||recipe.substitutions.length===0){
-      subHTML=`<div class="success-box">🎉 You have all the ingredients — no substitutions needed!</div>`;
+      subHTML=`<div class="success-box">You have all the ingredients — no substitutions needed.</div>`;
     }else{
       subHTML=recipe.substitutions.map(s=>{
         const cc=s.score>=80?'green':s.score>=65?'':'blue';
         return`<div class="sub-item">
-          <div class="sub-header">
-            <span class="badge b-red">${s.original}</span>
-            <span class="arrow-icon">→</span>
-            <span class="badge b-green">${s.substitute}</span>
-            ${s.qty?`<span class="badge b-blue">${s.qty}</span>`:''}
-          </div>
-          <div class="prog-bar" style="margin:6px 0;"><div class="prog-fill ${cc}" style="width:0%" data-target="${s.score}"></div></div>
-          <div class="sub-caption">
-            <strong>Compatibility: ${s.score}%</strong>&nbsp;·&nbsp;Role: ${s.role||'Flavor component'}<br>
-            <em>${s.note}</em>
-          </div>
+          <div class="sub-row"><span class="badge b-red">${s.original}</span><span class="sub-arrow">→</span><span class="badge b-green">${s.substitute}</span>${s.qty?`<span class="badge b-muted">${s.qty}</span>`:''}</div>
+          <div class="prog-track" style="margin:8px 0;"><div class="prog-fill ${cc}" style="width:0%" data-target="${s.score}"></div></div>
+          <div class="sub-note"><strong>Compatibility: ${s.score}%</strong> · Role: ${s.role||'Flavor component'}<br><em>${s.note}</em></div>
         </div>`;
       }).join('');
     }
   }
-
-  // Procedure with photos
   const procHTML=recipe.procedure.map((step,i)=>`
     <div class="step-item" onclick="toggleStep(this)">
-      <div class="step-header">
-        <div class="step-num">${i+1}</div>
-        <div class="step-title-txt">${step.title||'Step '+(i+1)}</div>
-        <div class="step-arrow">▶</div>
+      <div class="step-head">
+        <div class="step-num-badge">${i+1}</div>
+        <div class="step-title">${step.title||'Step '+(i+1)}</div>
+        <div class="step-chevron">▶</div>
       </div>
       <div class="step-body">
         <div class="step-text">${step.instruction}</div>
-        ${step.tip?`<div class="step-tip">💡 <strong>Pro tip:</strong> ${step.tip}</div>`:''}
-        <div class="step-img-wrap">
-          <img class="step-img" src="${stepPhoto(ov.name,i)}" alt="Step ${i+1}"
-            loading="lazy"
-            onerror="this.parentElement.innerHTML='<div style=\\'height:180px;display:flex;align-items:center;justify-content:center;font-size:32px;background:var(--surface)\\'>📸</div>'"
-          />
-          <div class="step-img-cap">Step ${i+1} — ${step.title||'Cooking step'}</div>
-        </div>
+        ${step.tip?`<div class="step-tip">Pro tip — ${step.tip}</div>`:''}
       </div>
     </div>`).join('');
-
-  // Match + sub info bar
-  const infoBar=!allSelected&&(matchScore>0||subCount>0)?`
-    <div class="match-info-bar">
-      <div class="match-info-row"><span class="match-info-icon">ℹ️</span><span>This recipe matches <strong>${matchScore}%</strong> of your available ingredients and requires <strong>${subCount}</strong> substitution(s).</span></div>
-      <div class="prog-wrap" style="margin:0;">
-        <div class="prog-label"><span>Ingredient Match</span><span>${matchScore}%</span></div>
-        <div class="prog-bar"><div class="prog-fill ${matchScore>=75?'green':matchScore>=50?'':'blue'}" style="width:0%" data-target="${matchScore}"></div></div>
-      </div>
+  const matchBar=!allSelected&&matchScore>0?`
+    <div class="match-bar">
+      <div class="match-bar-label">Ingredient Match</div>
+      <div class="prog-track"><div class="prog-fill ${matchScore>=75?'green':matchScore>=50?'':'blue'}" style="width:0%" data-target="${matchScore}"></div></div>
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text3);margin-top:8px;">${matchScore}% match · ${subCount} substitution${subCount!==1?'s':''} suggested</div>
     </div>`:'';
-
+  const explanationHTML=recipe.explanation?`<div class="info-box" style="margin-bottom:16px;">${recipe.explanation}</div>`:'';
   container.innerHTML=`
-    <!-- OVERVIEW -->
     <div class="card" style="animation-delay:0s">
-      <img class="recipe-hero" src="${heroPhoto(ov.name)}" alt="${ov.name}"
-        onerror="this.style.display='none'"/>
-      <div class="overview-name">${ov.name}</div>
-      <div class="overview-desc">${ov.description}</div>
-      <div style="display:flex;flex-wrap:wrap;gap:6px;">
-        <span class="badge b-blue">⏱ ${ov.time}</span>
-        <span class="badge b-orange">🍽 ${ov.servings} servings</span>
-        <span class="badge b-yellow">${ov.diet}</span>
-        <span class="badge b-purple">${ov.difficulty}</span>
-        <span class="badge b-blue">🌍 ${ov.cuisine}</span>
+      <div class="card-label">Recipe Overview</div>
+      <div class="ov-name">${ov.name}</div>
+      <div class="ov-desc">${ov.description}</div>
+      <div style="display:flex;flex-wrap:wrap;gap:4px;">
+        <span class="badge b-muted">⏱ ${ov.time}</span><span class="badge b-muted">${ov.servings} servings</span>
+        <span class="badge b-muted">${ov.diet}</span><span class="badge b-muted">${ov.difficulty}</span>
+        <span class="badge b-amber">${ov.cuisine}</span>
       </div>
     </div>
-
-    <!-- NUTRITION -->
-    <div class="card" style="animation-delay:.05s">
-      <div class="card-title">📊 Nutrition per Serving</div>
+    <div class="card" style="animation-delay:.04s">
+      <div class="card-label">Nutrition per Serving</div>
       <div id="nutri-totals">${buildNutriGrid(n,m)}</div>
-      <div style="font-size:12px;color:var(--muted);margin-top:4px;">Scale with the serving selector in the Ingredients section.</div>
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text3);margin-top:8px;letter-spacing:0.04em;">Adjust with the serving meter in ingredients below.</div>
     </div>
-
-    <!-- INGREDIENTS (with serving meter) -->
-    <div class="card" style="animation-delay:.1s">
-      <div class="card-title">🥗 Ingredients</div>
+    <div class="card" style="animation-delay:.08s">
+      <div class="card-label">Ingredients</div>
       ${servingMeterHTML(m)}
-      <div id="scale-note-el" class="scale-note" style="display:${m!==1?'inline-flex':'none'}">${m!==1?'⚡ Scaled to '+m+'× serving':''}</div>
+      <div id="scale-note-el" class="scale-note" style="display:${m!==1?'inline-flex':'none'}">${m!==1?'Scaled to '+m+'× serving':''}</div>
       <div class="ing-list" id="ing-dynamic">${buildIngList(recipe.ingredients,m)}</div>
     </div>
-
     ${!allSelected?`
-    <!-- SUBSTITUTIONS -->
-    <div class="card" style="animation-delay:.15s">
-      <div class="card-title">🔄 Substitutions</div>
-      ${infoBar}
-      ${subHTML}
-    </div>`:'<div class="success-box" style="margin-bottom:16px;animation:fadeUp .3s both">✅ All ingredients selected — no substitutions needed. You\'re all set!</div>'}
-
-    <!-- PROCEDURE -->
-    <div class="card" style="animation-delay:.2s">
-      <div class="card-title">📋 Step-by-Step Procedure</div>
-      <div style="font-size:13px;color:var(--text2);margin-bottom:14px;">Tap any step to expand — includes a reference photo for each stage.</div>
+    <div class="card" style="animation-delay:.12s">
+      <div class="card-label">Substitutions</div>
+      ${explanationHTML}${matchBar}${subHTML}
+    </div>`:`<div class="success-box" style="margin-bottom:20px;animation:fadeUp .3s both">All ingredients available — ready to cook.</div>`}
+    <div class="card" style="animation-delay:.16s">
+      <div class="card-label">Step-by-Step Procedure</div>
+      <div style="font-size:13px;color:var(--text2);margin-bottom:16px;">Tap any step to expand the instructions.</div>
       ${procHTML}
-    </div>
-  `;
-  animateBars();
-  container.scrollIntoView({behavior:'smooth',block:'start'});
+    </div>`;
+  animateBars();container.scrollIntoView({behavior:'smooth',block:'start'});
 }
 
-// ════════════════════════════════════════════
-// INGREDIENT SEARCH FLOW
-// ════════════════════════════════════════════
 async function findByIngredients(){
-  const raw=document.getElementById('ingredientInput').value.trim();
-  const dietGoal=document.getElementById('dietGoal').value;
+  const raw=document.getElementById('ingredientInput').value.trim();const dietGoal=document.getElementById('dietGoal').value;
   const output=document.getElementById('ingredientOutput');
-  if(!raw){output.innerHTML=`<div class="error-box">⚠️ Please enter at least one ingredient.</div>`;return;}
+  if(!raw){output.innerHTML=`<div class="error-box">Please enter at least one ingredient.</div>`;return;}
   const ingredients=raw.split(',').map(i=>i.trim()).filter(Boolean);
-  const iv=showLoading(output,['🔍 Scanning recipe database…','📊 Calculating ingredient matches…','🏆 Ranking top recipes…','✨ Preparing results…']);
+  const iv=showLoading(output,['Scanning recipe database','Calculating ingredient matches','Ranking top recipes','Preparing results']);
   let data;
-  try{
-    data=await apiCall('/api/find-by-ingredients',{ingredients,diet_goal:dietGoal,min_match:50});
-  }catch(e){
-    data=fallbackByIngredients(ingredients);
-  }
-  clearInterval(iv);
-  renderIngredientResults(data.recipes,output,ingredients);
+  try{data=await apiCall('/api/find-by-ingredients',{ingredients,diet_goal:dietGoal,min_match:50});}
+  catch(e){data=fallbackByIngredients(ingredients);}
+  clearInterval(iv);renderIngredientResults(data.recipes,output,ingredients);
 }
 
 function renderIngredientResults(recipes,output,userIngredients){
   if(!recipes||!recipes.length){
-    output.innerHTML=`<div class="card"><div style="text-align:center;color:var(--muted);font-size:14px;padding:20px 0;">No recipes found with ≥50% match. Try adding more ingredients.</div></div>`;
-    return;
+    output.innerHTML=`<div class="card"><div style="text-align:center;color:var(--text3);font-size:14px;padding:20px 0;">No recipes found with ≥50% match. Try adding more ingredients.</div></div>`;return;
   }
-  const RANKS=['🥇','🥈','🥉','4️⃣','5️⃣'];
+  const RANKS=['I','II','III','IV','V'];
   output.innerHTML=`
-    <div style="font-family:'Syne',sans-serif;font-size:17px;font-weight:700;margin-bottom:6px;">You can make ${recipes.length} recipe${recipes.length>1?'s':''}</div>
-    <div class="info-box" style="margin-bottom:16px;">🔍 Showing recipes with at least 50% ingredient match. Click any recipe to view the full checklist and procedure.</div>
-    <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px;">
-      ${userIngredients.map(i=>`<span class="badge b-green">${i}</span>`).join('')}
-    </div>
+    <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text3);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:16px;">${recipes.length} recipe${recipes.length>1?'s':''} you can make</div>
+    <div class="info-box">Showing recipes with at least 50% ingredient match.</div>
+    <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:20px;">${userIngredients.map(i=>`<span class="badge b-green">${i}</span>`).join('')}</div>
     ${recipes.map((r,i)=>{
       const cc=r.match_score>=75?'green':r.match_score>=50?'':'blue';
-      return`<div class="recipe-result-card" onclick="loadFromIngredientSearch('${r.name.replace(/'/g,"\\'")}','${userIngredients.join(',').replace(/'/g,"\\'")}')" style="animation-delay:${i*.08}s">
-        <div class="rrc-header">
-          <div class="rrc-rank-name"><div class="rrc-rank">${RANKS[i]||'📌'}</div><div class="rrc-name">${r.name}</div></div>
-          <div class="score-pill">${r.match_score}%</div>
+      return`<div class="rrc" onclick="loadFromIngredientSearch('${r.name.replace(/'/g,"\\'")}','${userIngredients.join(',').replace(/'/g,"\\'")}')" style="animation-delay:${i*.07}s">
+        <div class="rrc-top">
+          <div class="rrc-left"><div class="rrc-rank">${RANKS[i]||i+1}</div><div class="rrc-name">${r.name}</div></div>
+          <div class="score-tag">${r.match_score}%</div>
         </div>
         <div class="rrc-badges">
-          <span class="badge b-blue">🔥 ${r.nutrition.calories} kcal</span>
-          <span class="badge b-green">💪 ${r.nutrition.protein}g protein</span>
-          <span class="badge b-yellow">${r.diet}</span>
-          <span class="badge b-orange">⏱ ${r.time}</span>
+          <span class="badge b-amber">${r.nutrition.calories} kcal</span><span class="badge b-green">${r.nutrition.protein}g protein</span>
+          <span class="badge b-muted">${r.diet}</span><span class="badge b-muted">${r.time}</span>
         </div>
         <div class="prog-wrap">
-          <div class="prog-label"><span>Ingredient Match</span><span>${r.match_score}%</span></div>
-          <div class="prog-bar"><div class="prog-fill ${cc}" style="width:0%" data-target="${r.match_score}"></div></div>
+          <div class="prog-meta"><span>Ingredient Match</span><span>${r.match_score}%</span></div>
+          <div class="prog-track"><div class="prog-fill ${cc}" style="width:0%" data-target="${r.match_score}"></div></div>
         </div>
-        ${r.matched?`<div style="margin-top:8px;"><span style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;">You have: </span>${r.matched.map(m=>`<span class="badge b-green">${m}</span>`).join('')}</div>`:''}
-        ${r.missing&&r.missing.length?`<div style="margin-top:6px;"><span style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;">Still need: </span>${r.missing.map(m=>`<span class="badge b-red">${m}</span>`).join('')}</div>`:''}
-        <div class="rrc-click-hint">→ Click to see checklist &amp; full recipe with substitutions</div>
+        ${r.matched?`<div style="margin-top:10px;"><span style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:0.05em;">You have: </span>${r.matched.map(m=>`<span class="badge b-green">${m}</span>`).join('')}</div>`:''}
+        ${r.missing&&r.missing.length?`<div style="margin-top:6px;"><span style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:0.05em;">Still need: </span>${r.missing.map(m=>`<span class="badge b-red">${m}</span>`).join('')}</div>`:''}
+        <div class="rrc-hint">→ Click to see checklist and full recipe</div>
       </div>`;
     }).join('')}`;
   animateBars();
 }
 
 async function loadFromIngredientSearch(recipeName,ingredientsCSV){
-  // Switch to recipe tab
-  switchMode('recipe');
-  document.getElementById('recipeName').value=recipeName;
-  window.scrollTo({top:0,behavior:'smooth'});
-
-  const output=document.getElementById('recipeOutput');
-  output.innerHTML='';
-
-  const iv=showLoading(output,STEPS_DETAIL);
-  let data;
-  try{
-    const ingredients=ingredientsCSV.split(',').map(s=>s.trim()).filter(Boolean);
-    data=await apiCall('/api/recipe-detail',{recipe_name:recipeName,checked_ingredients:ingredients,serving_multiplier:1});
-  }catch(e){
-    data=fallbackRecipeDetail(recipeName);
-  }
-  clearInterval(iv);
-  currentRecipeData=data;
-  currentCheckedIngredients=new Set();
-  allIngredientsSelected=false;
-  currentServingMult=1;
-
-  output.innerHTML='';
-  const checklistDiv=document.createElement('div');
-  checklistDiv.id='checklist-section';
-  output.appendChild(checklistDiv);
+  switchMode('recipe');document.getElementById('recipeName').value=recipeName;window.scrollTo({top:0,behavior:'smooth'});
+  const output=document.getElementById('recipeOutput');output.innerHTML='';
+  const iv=showLoading(output,STEPS_DETAIL);let data;
+  try{const ingredients=ingredientsCSV.split(',').map(s=>s.trim()).filter(Boolean);data=await apiCall('/api/recipe-detail',{recipe_name:recipeName,checked_ingredients:ingredients,serving_multiplier:1});}
+  catch(e){data=fallbackRecipeDetail(recipeName);}
+  clearInterval(iv);currentRecipeData=data;currentCheckedIngredients=new Set();allIngredientsSelected=false;currentServingMult=1;
+  output.innerHTML='';const checklistDiv=document.createElement('div');checklistDiv.id='checklist-section';output.appendChild(checklistDiv);
   renderChecklistSection(checklistDiv,data,recipeName);
 }
 </script>

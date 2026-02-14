@@ -1,13 +1,11 @@
 import requests
 import time
-
-BASE = "https://api.foodoscope.com/recipe2-api"
+from utils.constants import RECIPEDB_API_KEY, RECIPEDB_BASE_URL
 
 
 def _get_headers():
-    from utils.constants import API_KEY
     return {
-        "Authorization": f"Bearer {API_KEY}",
+        "Authorization": f"Bearer {RECIPEDB_API_KEY}",
         "Content-Type": "application/json"
     }
 
@@ -16,7 +14,7 @@ def fetch_recipes_by_title(title: str, limit: int = 5):
     """Returns basic info for multiple recipes — used for search listing."""
     try:
         r = requests.get(
-            f"{BASE}/recipe-bytitle/recipeByTitle",
+            f"{RECIPEDB_BASE_URL}/recipe-bytitle/recipeByTitle",
             headers=_get_headers(),
             params={"title": title},
             timeout=8
@@ -47,7 +45,7 @@ def fetch_recipe_by_title(title: str):
         time.sleep(0.5)
 
         r2 = requests.get(
-            f"{BASE}/search-recipe/{recipe_id}",
+            f"{RECIPEDB_BASE_URL}/search-recipe/{recipe_id}",
             headers=_get_headers(),
             timeout=8
         )
@@ -81,7 +79,7 @@ def fetch_recipe_instructions(recipe_id: str):
     """Returns step-by-step instructions for a recipe using its ID."""
     try:
         r = requests.get(
-            f"{BASE}/instructions/{recipe_id}",
+            f"{RECIPEDB_BASE_URL}/instructions/{recipe_id}",
             headers=_get_headers(),
             timeout=8
         )
