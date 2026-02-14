@@ -1,7 +1,6 @@
-"""
-Recipe-related routes.
-Registered in backend/main.py via app.include_router()
-"""
+import sys
+import os
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
@@ -11,7 +10,7 @@ from logic.scoring import calculate_confidence
 from logic.tradeoff import generate_tradeoff_line
 from logic.recipe_search import get_procedure
 from services.flavordb_service import fetch_flavor_entity
-from utils.validators import validate_recipe_name, validate_ingredients
+from utils.validators import validate_recipe_name
 
 router = APIRouter()
 
@@ -30,13 +29,11 @@ class DetailRequest(BaseModel):
 
 @router.post("/search-recipes")
 def search_recipes(req: SearchRequest):
-
     valid, error = validate_recipe_name(req.recipe_name)
     if not valid:
         raise HTTPException(status_code=400, detail=error)
 
     recipes = fetch_recipes_by_title(req.recipe_name, limit=req.num_recipes)
-
     if not recipes:
         return {"recipes": []}
 
@@ -44,30 +41,23 @@ def search_recipes(req: SearchRequest):
     for i, r in enumerate(recipes):
         try:
             calories = int(float(r.get("Calories", 0) or 0))
-            protein = round(float(r.get("Protein (g)", 0) or 0), 1)
-            carbs = round(float(r.get("Carbohydrate, by difference (g)", 0) or 0), 1)
-            fat = round(float(r.get("Total lipid (fat) (g)", 0) or 0), 1)
         except Exception:
-            calories = protein = carbs = fat = 0
-
-        is_vegan = str(r.get("vegan", "0")) == "1.0"
-        is_vegetarian = str(r.get("lacto_vegetarian", "0")) == "1.0"
-        diet_tag = "Vegan" if is_vegan else ("Vegetarian" if is_vegetarian else "Balanced")
+            calories = 0
 
         results.append({
             "name": r.get("Recipe_title", "Unknown"),
-            "description": f"A {r.get('Sub_region', r.get('Region', ''))} recipe from {r.get('Continent', '')}.",
+            "description": f"A {r.get('Region', 'International')} recipe.",
             "time": f"{r.get('total_time', '?')} min",
             "servings": r.get("servings", 4),
-            "difficulty": _get_difficulty(r.get("total_time", "30")),
-            "diet": diet_tag,
+            "difficulty": _get_difficulty(str(r.get("total_time", "30"))),
+            "diet": "Balanced",
             "cuisine": r.get("Region", "International"),
             "match_score": max(0, 90 - i * 8),
             "nutrition": {
                 "calories": calories,
-                "protein": protein,
-                "carbs": carbs,
-                "fat": fat,
+                "protein": 0,
+                "carbs": 0,
+                "fat": 0,
             }
         })
 
@@ -76,7 +66,6 @@ def search_recipes(req: SearchRequest):
 
 @router.post("/recipe-detail")
 def recipe_detail(req: DetailRequest):
-
     valid, error = validate_recipe_name(req.recipe_name)
     if not valid:
         raise HTTPException(status_code=400, detail=error)
@@ -132,18 +121,14 @@ def recipe_detail(req: DetailRequest):
     except Exception:
         calories = protein = carbs = fat = 0
 
-    is_vegan = str(recipe.get("vegan", "0")) == "1.0"
-    is_vegetarian = str(recipe.get("lacto_vegetarian", "0")) == "1.0"
-    diet_tag = "Vegan" if is_vegan else ("Vegetarian" if is_vegetarian else "Balanced")
-
     return {
         "overview": {
             "name": recipe.get("Recipe_title", req.recipe_name),
-            "description": f"A {recipe.get('Sub_region', recipe.get('Region', 'classic'))} recipe from {recipe.get('Continent', 'the world')}.",
+            "description": f"A {recipe.get('Region', 'classic')} recipe from {recipe.get('Continent', 'the world')}.",
             "time": f"{recipe.get('total_time', '?')} min",
             "servings": recipe.get("servings", 4),
-            "difficulty": _get_difficulty(recipe.get("total_time", "30")),
-            "diet": diet_tag,
+            "difficulty": _get_difficulty(str(recipe.get("total_time", "30"))),
+            "diet": "Balanced",
             "cuisine": recipe.get("Region", "International"),
         },
         "nutrition": {
@@ -163,7 +148,6 @@ def recipe_detail(req: DetailRequest):
 
 
 def _get_difficulty(total_time_str: str) -> str:
-    """Derive difficulty from total cook time."""
     try:
         mins = int(total_time_str)
         if mins <= 20:

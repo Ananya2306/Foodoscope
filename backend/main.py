@@ -1,11 +1,13 @@
+import sys
+import os
+
+# MUST be first — before any local imports
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
-import sys
-import os
-
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from backend.routes.recipe_routes import router as recipe_router
 from backend.routes.ingredient import router as ingredient_router
@@ -25,7 +27,6 @@ app.add_middleware(
 
 app.mount("/static", StaticFiles(directory="frontend"), name="static")
 
-# Register route files
 app.include_router(recipe_router, prefix="/api")
 app.include_router(ingredient_router, prefix="/api")
 
