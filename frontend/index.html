@@ -731,9 +731,8 @@ function renderRecipeList(recipes,output){
   animateBars();
 }
 
-// ════════════════════════════════════════════
 // STEP 2 — LOAD RECIPE DETAIL: checklist view
-// ════════════════════════════════════════════
+
 async function loadRecipeDetail(recipeName, cardEl){
   // Highlight selected card
   document.querySelectorAll('.recipe-result-card').forEach(c=>c.style.borderColor='');

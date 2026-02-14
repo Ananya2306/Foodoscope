@@ -1,7 +1,7 @@
 import requests
 import time
 
-BASE = "https://api.foodoscope.com/recipe2-api"
+BASE = "http://cosylab.iiitd.edu.in:6969/recipe2-api"
 
 
 def _get_headers():
