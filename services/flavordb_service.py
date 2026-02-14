@@ -4,29 +4,33 @@ from utils.constants import API_KEY, FLAVOR_BASE_URL
 
 def fetch_flavor_entity(name: str):
 
-    url = f"{FLAVOR_BASE_URL}/entities/by-readable-name"
+    # Try with full name first, then first word only
+    attempts = [name, name.split()[0]]
 
-    headers = {
-        "Authorization": f"Bearer {API_KEY}",
-        "Content-Type": "application/json"
-    }
+    for attempt in attempts:
+        url = f"{FLAVOR_BASE_URL}/entities/by-readable-name"
 
-    params = {"readable_name": name}
+        headers = {
+            "Authorization": f"Bearer {API_KEY}",
+            "Content-Type": "application/json"
+        }
 
-    try:
-        response = requests.get(
-            url, headers=headers, params=params, timeout=10
-        )
+        params = {"readable_name": attempt}
 
-        if response.status_code != 200:
-            return None
+        try:
+            response = requests.get(
+                url, headers=headers, params=params, timeout=10
+            )
 
-        data = response.json()
+            if response.status_code != 200:
+                continue
 
-        if data.get("success") and data["data"]:
-            return data["data"][0]
+            data = response.json()
 
-        return None
+            if data.get("success") and data["data"]:
+                return data["data"][0]
 
-    except Exception:
-        return None
+        except Exception:
+            continue
+
+    return None
