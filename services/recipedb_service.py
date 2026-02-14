@@ -75,3 +75,19 @@ def fetch_recipe_by_title(title: str):
 
     except Exception:
         return []
+
+
+def fetch_recipe_instructions(recipe_id: str):
+    """Returns step-by-step instructions for a recipe using its ID."""
+    try:
+        r = requests.get(
+            f"{BASE}/instructions/{recipe_id}",
+            headers=_get_headers(),
+            timeout=8
+        )
+        if r.status_code != 200:
+            return []
+        data = r.json()
+        return data.get("steps", [])
+    except Exception:
+        return []
