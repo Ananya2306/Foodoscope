@@ -14,24 +14,34 @@ def analyze_recipe(recipe_name: str, user_ingredients: list):
 
     recipe = recipes[0]
 
-    # ⚠️ Replace with real ingredient API when available
-    recipe_ingredients = [
-        "chicken", "onion", "garlic",
-        "salt", "pepper", "oil"
-    ]
-
-    match_data = detect_missing(
-        recipe_ingredients,
-        user_ingredients
+    # Get real ingredients from the API response
+    recipe_ingredients = (
+        recipe.get("ingredients") or
+        recipe.get("Ingredients") or
+        recipe.get("ingredient_list") or
+        recipe.get("Ingredient_list") or
+        []
     )
 
-    substitutions = {}
+    if not recipe_ingredients:
+        return {
+            "recipe_title": recipe.get("Recipe_title", recipe_name),
+            "match_percent": 0,
+            "confidence": 0,
+            "missing": [],
+            "substitutions": {},
+            "explanation": "Recipe found but ingredient list unavailable from API."
+        }
 
+    match_data = detect_missing(recipe_ingredients, user_ingredients)
+
+    substitutions = {}
     for ingredient in match_data["missing"]:
         entity = fetch_flavor_entity(ingredient)
-
         if entity:
-            substitutions[ingredient] = entity.get("entity_readable_name")
+            substitutions[ingredient] = entity.get(
+                "entity_readable_name", "No substitute found"
+            )
         else:
             substitutions[ingredient] = "No substitute found"
 
@@ -46,7 +56,7 @@ def analyze_recipe(recipe_name: str, user_ingredients: list):
     )
 
     return {
-        "recipe_title": recipe["Recipe_title"],
+        "recipe_title": recipe.get("Recipe_title", recipe_name),
         "match_percent": match_data["match_percent"],
         "confidence": confidence,
         "missing": match_data["missing"],

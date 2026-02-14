@@ -13,14 +13,20 @@ def fetch_recipe_by_title(title: str):
 
     params = {"title": title}
 
-    response = requests.get(url, headers=headers, params=params)
+    try:
+        response = requests.get(
+            url, headers=headers, params=params, timeout=8
+        )
 
-    if response.status_code != 200:
-        raise Exception(f"Recipe API error: {response.text}")
+        if response.status_code != 200:
+            return []
 
-    data = response.json()
+        data = response.json()
 
-    if not data.get("success"):
+        if not data.get("success"):
+            return []
+
+        return data["data"]
+
+    except Exception:
         return []
-
-    return data["data"]
