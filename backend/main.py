@@ -1,3 +1,4 @@
+#FastAPI app setup with CORS
 import sys
 import os
 
