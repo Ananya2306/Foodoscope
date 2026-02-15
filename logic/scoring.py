@@ -1,3 +1,4 @@
+#Confidence algorithm (2→4→6 penalty)
 def calculate_confidence(match_percent: float, missing_count: int):
     """
     Confidence score based on match % and number of missing ingredients.
