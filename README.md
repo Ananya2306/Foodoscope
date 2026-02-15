@@ -89,3 +89,7 @@ streamlit run app.py
 
 ## Team
 AlgoMinds — ACDSS Project
+ANANYA
+CHAITHRIKA YADAV
+AYUSH RAJPUT
+SHREYAS RASTOGI
