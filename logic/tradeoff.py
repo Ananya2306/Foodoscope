@@ -1,3 +1,4 @@
+#Human-readable advice generator
 def generate_tradeoff_line(match_percent: float, missing_count: int):
     """
     Generates a human-readable explanation of the recipe match quality
