@@ -1,3 +1,4 @@
+#Alternative Streamlit interface
 import streamlit as st
 from utils.helpers import split_ingredients
 from logic.recipe_search import analyze_recipe
